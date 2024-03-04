@@ -6,7 +6,7 @@ body {
   ol, ul {
     padding-left: 30px;
   }
-  
+
   .board-row:after {
     clear: both;
     content: "";
@@ -16,21 +16,33 @@ body {
   .status {
     margin-bottom: 10px;
   }
-  
-  .square {
-    background: #fff;
-    border: 1px solid #999;
+
+  .square-table, .square-string {
     float: left;
     font-size: 24px;
-    font-weight: bold;
     line-height: 34px;
-    height: 34px;
-    margin-right: -1px;
-    margin-top: -1px;
+    height: 80px;
+    margin-right: -10px;
+    margin-top: -12px;
     padding: 0;
     text-align: center;
-    width: 34px;
+    word-wrap: break-word;  
   }
+
+  .square-table {
+    background-color: aqua;
+    border: 5px solid black;
+    width: 80px;
+  }
+
+  .square-string {
+    background-color: #fff;
+    border-top: 5px solid black;
+    border-left: none;
+    border-right: none;
+    border-bottom: none;
+    width: 90px;
+  }  
   
   .square:focus {
     outline: none;
@@ -47,4 +59,36 @@ body {
   
   .game-info {
     margin-left: 20px;
+  }
+
+  .container {
+    background: black;
+    display: inline-block;
+    border: 5px solid black;
+  }
+
+  .grid {
+    display: grid;
+    grid-template-columns: repeat(3, 80px);
+    grid-template-rows: repeat(3, 80px);
+    grid-gap: 5px;
+  }
+  
+  .cell {
+     /* center the cell content */
+    justify-content: center;
+    align-items: center;
+    display: flex;
+    font-family: Arial;
+    font-size: 3rem;
+    font-weight: bold;
+    background: white;
+  }
+
+  .btn {
+    width: 48px;
+    height: 48px;
+    min-width: 0;
+    max-width: 0;
+    min-height: 0;
   }
