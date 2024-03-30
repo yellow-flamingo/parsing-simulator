@@ -2,19 +2,19 @@ import { Grid, InputAdornment, TextField } from "@mui/material";
 import AccountCircle from "@mui/icons-material/AccountCircle";
 import { ArrowRightAlt } from "@mui/icons-material";
 
-export default function GridRow() {
+export default function GridRow({ rowId, handlerLeft, handlerRight }) {
     return (
         <Grid container spacing={1}>
             <Grid item xs={4.4}>
                 <TextField
                     placeholder="LHS"
                     margin="dense"
-                    size="small">
+                    size="small"
+                    onChange = {(event) => handlerLeft(event,rowId)}>
                 </TextField>
             </Grid>
             <Grid item xs={3}>
                 <TextField
-                    // sx={{input: {textAlign: "center"}}}
                     margin="dense"
                     size="small"
                     disabled={true}
@@ -31,7 +31,8 @@ export default function GridRow() {
                 <TextField
                     placeholder="RHS"
                     margin="dense"
-                    size="small">
+                    size="small"
+                    onChange = {(event) => handlerRight(event,rowId)}>
                 </TextField>
             </Grid>
         </Grid>
