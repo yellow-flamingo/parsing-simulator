@@ -4,27 +4,11 @@ import { createTheme, ThemeProvider } from "@mui/material/styles";
 import { Stack, Box, Paper, TextField, Typography, Button, Container, IconButton } from "@mui/material";
 import { ArrowLeft, ArrowRight, Cancel, ConnectedTvOutlined, Forward, LensTwoTone, PlayArrow, Replay, SolarPower } from '@mui/icons-material';
 import AddCircleIcon from '@mui/icons-material/AddCircle';
-import { useState } from 'react';
+import { useState, useRef } from 'react';
 import './index.css';
 import GridRow from "./GridRow";
 import { cykParse } from "./cykParse";
-
-const useStyles = makeStyles((theme) => ({
-  field: {
-    marginTop: 10,
-    marginBottom: 10,
-  },
-  root: {
-    margin: theme.spacing.unit * 2
-  },
-  paper: {
-    padding: theme.spacing.unit,
-    height: "1200"
-  },
-  startIcon: {
-    margin: 0
-  }
-}));
+import { convertToCNF } from "./convertToCNF";
 
 const theme = createTheme({
   palette: {
@@ -38,7 +22,6 @@ const theme = createTheme({
 });
 
 export default function App() {
-  const classes = useStyles;
 
   var currentId = 4;
 
@@ -56,30 +39,32 @@ export default function App() {
     setRightItems(newRightItems);
   }  
 
+  let cnfConversion = useRef();
+
   const [items,setItems] = useState([]);
   const [grammar,setGrammar] = useState([<GridRow rowId={0} handlerLeft={handleLeftItem} handlerRight={handleRightItem}/>,<GridRow rowId={1} handlerLeft={handleLeftItem} handlerRight={handleRightItem}/>,<GridRow rowId={2} handlerLeft={handleLeftItem} handlerRight={handleRightItem}/>,<GridRow rowId={3} handlerLeft={handleLeftItem} handlerRight={handleRightItem}/>,<GridRow rowId={4} handlerLeft={handleLeftItem} handlerRight={handleRightItem}/>]);
   const [string,setString] = useState('abbbb');
   const [leftItems,setLeftItems] = useState(Array(grammar.length).fill(''));
   const [rightItems,setRightItems] = useState(Array(grammar.length).fill(''));
+  const [grammarSteps,setGrammarSteps] = useState([]);
+
+  const [cnfRunning, setCnfRunning] = useState(false);
+  const [cnfCurrentStep, setCnfCurrentStep] = useState(0);
+
+  const [tableRunning, setTableRunning] = useState(false);
+  const [tableCurrentStep, setTableCurrentStep] = useState(0);
 
   var cykGrid = [];
 
   var currentId = 4;
 
-  const cnfItems = {'S': ['CE','CG','CH','CD'], 'A': ['DF','DA','DB','b'], 'B': ['BI','BC','AC','a','DF','DA','DB','b'], 'C': ['a'], 'D': ['b'], 'E': ['DF'], 'F': ['AB'], 'G': ['DA'], 'H': ['DB'], 'I': ['AC']};
-
-  const cnfList = [];
-
-  for (let key in cnfItems) {
-    let rightSide = "";
-    for (let item of cnfItems[key]) {
-      rightSide += item + ' | '
-    }
-    rightSide = rightSide.slice(0,-3);
-
-    let listItem = <li>{key} &#8594; {rightSide}</li>;
-    cnfList.push(listItem);
-  }
+  const grammarExplanations = [
+    "Step 1 - remove lambda productions:",
+    "Step 2 - remove unit productions:",
+    "Step 3 - reduce to two symbols:",
+    "Step 4 - separate terminals from non-terminals:",
+    "Grammar in CNF:"
+  ]
 
   const handleChangeString = (event) => {
     setString(event.target.value);
@@ -93,6 +78,47 @@ export default function App() {
   const handleClickTwo = () => {
     currentId += 1;
     setGrammar([...grammar, <GridRow rowId={currentId} handlerLeft={handleLeftItem} handlerRight={handleRightItem}/>]);
+  }
+
+  const handleClickCnf = () => {
+    setCnfRunning(true);
+    setCnfCurrentStep(1);
+    cnfConversion.current = convertToCNF();
+    setGrammarSteps([JSON.parse(JSON.stringify(cnfConversion.current.next().value))]);
+  }
+
+  const handleClickNext = () => {
+    setCnfCurrentStep(cnfCurrentStep + 1);
+
+    let nextStep = cnfConversion.current.next();
+    console.log(grammarSteps);
+
+    if (cnfRunning) {
+      if (nextStep.done) {
+        setGrammarSteps([grammarSteps[grammarSteps.length-1]]);
+        setCnfRunning(false);
+        setTableRunning(true);
+      } else {
+        setGrammarSteps([...grammarSteps, JSON.parse(JSON.stringify(nextStep.value))]);
+      }
+    }
+  }
+
+  function displayGrammarList(grammar) {
+    let grammarList = [];
+    let listItem;
+    for (let key in grammar) {
+      let rightSide = "";
+      for (let item of grammar[key]) {
+        rightSide += item + ' | '
+      }
+      rightSide = rightSide.slice(0,-3);
+  
+      listItem = <li>{key} &#8594; {rightSide}</li>
+      grammarList.push(listItem);
+    }
+
+    return <ul class="grammar-list">{grammarList}</ul>;
   }
 
   function DrawGrid(grid) {
@@ -130,10 +156,9 @@ export default function App() {
   return (
 
     <ThemeProvider theme={theme}>
-      <div className={classes.root}>
         <Grid container spacing={2}>
           <Grid item xs={2}>
-            <Paper elevation={6} className={classes.paper}
+            <Paper elevation={6} height={1200}
               style={{ minHeight: "70vh", maxHeight: "70vh", padding: 8, overflow: "auto" }}>
                 <Typography variant="h6" style={{ marginLeft: 8, marginTop: 8 }}>
                   Step 1: Enter your grammar
@@ -159,7 +184,7 @@ export default function App() {
                 <Typography variant="h6" style={{ padding: 8 }}>
                   Step 3: Select Algorithm
                 </Typography>
-                <Button variant="contained" color="primary" startIcon={<PlayArrow />} style={{ justifyContent: "flex-start", width: 214, marginBottom: 8, marginLeft: 8 }}>
+                <Button onClick={handleClickCnf} variant="contained" color="primary" startIcon={<PlayArrow />} style={{ justifyContent: "flex-start", width: 214, marginBottom: 8, marginLeft: 8 }}>
                   Convert To CNF
                 </Button>
                 <Button variant="contained" color="primary" startIcon={<PlayArrow />} style={{ justifyContent: "flex-start", width: 214, marginBottom: 8, marginLeft: 8 }}>
@@ -171,39 +196,21 @@ export default function App() {
             </Paper>
           </Grid>
           <Grid item xs={10}>
-            <Paper elevation={6} className={classes.paper}
+            <Paper elevation={6} height={1200}
               style={{ minHeight: "94.3vh", maxHeight: "94.3vh", padding: 8, overflow: "auto" }}>
                 <Box display="inline">
                   <Box textAlign="center">
                     <Button variant="contained" color="primary" style={{ minWidth: '30px', maxWidth: '30px', maxWidth: '30px', maxHeight: '30px', marginTop: 8, marginRight: 2 }} startIcon={<ArrowLeft style={{marginLeft: '10px'}} />}></Button>
-                    <Button variant="contained" color="primary" style={{ minWidth: '30px', maxWidth: '30px', maxWidth: '30px', maxHeight: '30px', marginTop: 8, marginLeft: 2 }} startIcon={<ArrowRight style={{marginLeft: '10px'}} />}></Button>
-                    {/* <Button variant="contained" color="error" startIcon={<Cancel />} style={{ minHeight: '30px', maxHeight: '30px', marginTop: 8, marginLeft: 8 }}> Exit Visualization</Button> */}
+                    <Button onClick = {handleClickNext} variant="contained" color="primary" style={{ minWidth: '30px', maxWidth: '30px', maxWidth: '30px', maxHeight: '30px', marginTop: 8, marginLeft: 2 }} startIcon={<ArrowRight style={{marginLeft: '10px'}} />}></Button>
                   </Box>
                 </Box>
-                  {/* <Button variant="contained" color="error" startIcon={<Cancel />} style={{ minHeight: '30px', maxHeight: '30px', marginTop: 8, marginRight: 8 }}> Exit Visualization</Button> */}
-                  {/* <Box display="flex" justifyContent="flex-end" alignItems="flex-end">
-                    <Button variant="contained" color="primary" startIcon={<Cancel />} style={{ marginTop: 8, marginRight: 8 }}>
-                      Exit Visualization
-                    </Button>
-                  </Box> */}
-                {/* <Typography variant="h6" style={{ padding: 8 }}>
-                  Step 1 - convert grammar to CNF:
-                </Typography> */}
                 <div class="main-parent">
-                  <div class="grammar-list-child">
-                    <ul class="grammar-list">
-                      {cnfList}
-                      {/* <li>S &#8594; CE | CG | CH | CD</li>
-                      <li>A &#8594; DF | DA | DB | b</li>
-                      <li>C &#8594; a</li>
-                      <li>D &#8594; b</li>
-                      <li>E &#8594; DF</li>
-                      <li>F &#8594; AB</li>
-                      <li>G &#8594; DA</li>
-                      <li>H &#8594; DB</li>
-                      <li>I &#8594; AC</li> */}
-                    </ul>
-                  </div>
+                  {grammarSteps.map(step =>
+                    <div class="grammar-list-child">
+                      {grammarExplanations[cnfCurrentStep-1]}
+                      {displayGrammarList(step)}
+                    </div>
+                  )}
                   <div class="table-child">
                     <table id="cyk-table" style={{ padding: 8 }}>
                       {items}
@@ -212,13 +219,7 @@ export default function App() {
                 </div>
             </Paper>
           </Grid>
-          {/* <Grid item xs={12}>
-            <Paper elevation={6} className={classes.paper}
-              style={{ minHeight: "30vh", maxHeight: "30vh", overflow: "auto" }}>
-            </Paper>
-          </Grid>         */}
         </Grid>
-      </div>
     </ThemeProvider>
   );
 }

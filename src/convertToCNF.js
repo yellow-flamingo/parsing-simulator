@@ -43,8 +43,8 @@ function findNonTerminal(terminal, grammar) {
 }
 
 function removeCharacter(str, index) {
-    first = str.substring(0,index);
-    second = str.substring(index+1,str.length);
+    let first = str.substring(0,index);
+    let second = str.substring(index+1,str.length);
     
     return(first + second);
 }
@@ -189,10 +189,19 @@ function separateTerminals(grammarToConvert) {
     return newGrammar;
 }
 
-export function convertToCNF(grammarToConvert) {
+export function* convertToCNF() {
 
     var items = {'S': ['abAB'], 'A': ['bAB', ''], 'B': ['BAa', '']};
-    var newGrammar = {};
 
-    return newGrammar;
+    let grammar1 = removeLambdaProductions(items);
+    yield grammar1;
+
+    let grammar2 = removeUnitProductions(grammar1);
+    yield grammar2;
+
+    let grammar3 = ensureTwoSymbols(grammar2);
+    yield grammar3;
+
+    let grammar4 = separateTerminals(grammar3);
+    yield grammar4;
 }
