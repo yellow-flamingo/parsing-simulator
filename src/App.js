@@ -1,10 +1,10 @@
 import Grid from "@mui/material/Grid";
-import { makeStyles } from "@mui/styles";
 import { createTheme, ThemeProvider } from "@mui/material/styles";
-import { Stack, Box, Paper, TextField, Typography, Button, Container, IconButton } from "@mui/material";
-import { ArrowLeft, ArrowRight, Cancel, ConnectedTvOutlined, Forward, LensTwoTone, PlayArrow, Replay, SolarPower } from '@mui/icons-material';
+import { Box, Paper, TextField, Typography, Button,  IconButton } from "@mui/material";
+import { ArrowLeft, ArrowRight,  PlayArrow } from '@mui/icons-material';
 import AddCircleIcon from '@mui/icons-material/AddCircle';
 import { useState, useRef } from 'react';
+import Tree from 'react-d3-tree';
 import './index.css';
 import GridRow from "./GridRow";
 import { cykParse } from "./cykParse";
@@ -20,6 +20,47 @@ const theme = createTheme({
     },
   },
 });
+
+const MyTreeComponent = () => {
+
+  const treeData = {
+    name: 'CEO',
+    children: [
+      {
+        name: 'Manager',
+        attributes: {
+          department: 'Production',
+        },
+        children: [
+          {
+            name: 'Foreman',
+            attributes: {
+              department: 'Fabrication',
+            },
+            children: [
+              {
+                name: 'Worker',
+              },
+            ],
+          },
+          {
+            name: 'Foreman',
+            attributes: {
+              department: 'Assembly',
+            },
+            children: [
+              {
+                name: 'Worker',
+              },
+            ],
+          },
+        ],
+      },
+    ],
+  };
+
+  return <Tree data={treeData} orientation="vertical" zoomable={false} draggable={false}/>
+};
 
 export default function App() {
 
@@ -41,12 +82,27 @@ export default function App() {
 
   let cnfConversion = useRef();
 
+  // For grammar input:
+  // store array in state consisting of arrays of each 2 elements representing the LHS and RHS of a grammar production
+  // map through this array in render and for each element create a GridRow component:
+  // {grammarInput.map((row,index) =>
+  //   <GridRow rowId={index} lhs={row[0]} rhs={row[1] handlerLeft={handleLeftItem} handlerRight={handleRightItem}}
+  // )}
+  // when the '+' button is clicked, a new pair list [0,0] is added to grammarInput
+  // value={lhs} or value={rhs} inside the grid items in GridRow
+  // (could probably get rid of handleLeftItem() and handleRightItem() and just update grammarInput whenever a letter is typed)
+
   const [items,setItems] = useState([]);
+  const [grammarInput, setGrammarInput] = useState([['S','abAB'], ['A','bAB'], ['A',''], ['B','BAa'], ['B','']]);
   const [grammar,setGrammar] = useState([<GridRow rowId={0} handlerLeft={handleLeftItem} handlerRight={handleRightItem}/>,<GridRow rowId={1} handlerLeft={handleLeftItem} handlerRight={handleRightItem}/>,<GridRow rowId={2} handlerLeft={handleLeftItem} handlerRight={handleRightItem}/>,<GridRow rowId={3} handlerLeft={handleLeftItem} handlerRight={handleRightItem}/>,<GridRow rowId={4} handlerLeft={handleLeftItem} handlerRight={handleRightItem}/>]);
   const [string,setString] = useState('abbbb');
   const [leftItems,setLeftItems] = useState(Array(grammar.length).fill(''));
+  // const [leftItems,setLeftItems] = useState(['S', 'A', 'A', 'B', 'B']);
   const [rightItems,setRightItems] = useState(Array(grammar.length).fill(''));
+  // const [rightItems,setRightItems] = useState(['abAB', 'bAB', '', 'BAa', '']);
   const [grammarSteps,setGrammarSteps] = useState([]);
+  const [canGoBack,setCanGoBack] = useState(false);
+  const [canGoForwards,setCanGoForwards] = useState(false);
 
   const [cnfRunning, setCnfRunning] = useState(false);
   const [cnfCurrentStep, setCnfCurrentStep] = useState(0);
@@ -82,12 +138,17 @@ export default function App() {
 
   const handleClickCnf = () => {
     setCnfRunning(true);
+    setCanGoForwards(true);
     setCnfCurrentStep(1);
     cnfConversion.current = convertToCNF();
     setGrammarSteps([JSON.parse(JSON.stringify(cnfConversion.current.next().value))]);
   }
 
   const handleClickNext = () => {
+    if (!canGoBack) {
+      setCanGoBack(true);
+    }
+
     setCnfCurrentStep(cnfCurrentStep + 1);
 
     let nextStep = cnfConversion.current.next();
@@ -156,70 +217,73 @@ export default function App() {
   return (
 
     <ThemeProvider theme={theme}>
-        <Grid container spacing={2}>
-          <Grid item xs={2}>
-            <Paper elevation={6} height={1200}
-              style={{ minHeight: "70vh", maxHeight: "70vh", padding: 8, overflow: "auto" }}>
-                <Typography variant="h6" style={{ marginLeft: 8, marginTop: 8 }}>
-                  Step 1: Enter your grammar
-                </Typography>
-                <Grid style={{ marginLeft: 8 }}>
-                  {grammar}
-                </Grid>
-                <IconButton onClick={handleClickTwo} color="primary" style={{ marginBottom: 16 }}>
-                  <AddCircleIcon />
-                </IconButton>
-                <Typography variant="h6" style={{ marginTop: 8, marginLeft: 8 }}>
-                  Step 2: Enter string to parse
-                </Typography>
-                <TextField
-                  placeholder="string"
-                  margin="dense"
-                  variant="outlined"
-                  onChange={handleChangeString}
-                  value={string}
-                  size="small"
-                  style={{ marginBottom: 24, marginLeft: 8 }}>
-                </TextField>
-                <Typography variant="h6" style={{ padding: 8 }}>
-                  Step 3: Select Algorithm
-                </Typography>
-                <Button onClick={handleClickCnf} variant="contained" color="primary" startIcon={<PlayArrow />} style={{ justifyContent: "flex-start", width: 214, marginBottom: 8, marginLeft: 8 }}>
-                  Convert To CNF
-                </Button>
-                <Button variant="contained" color="primary" startIcon={<PlayArrow />} style={{ justifyContent: "flex-start", width: 214, marginBottom: 8, marginLeft: 8 }}>
-                  Convert To GNF
-                </Button>                                
-                <Button onClick={handleClick} variant="contained" color="primary" startIcon={<PlayArrow />} style={{ justifyContent: "flex-start", width: 214, marginBottom: 8, marginLeft: 8 }}>
-                  CYK Parse
-                </Button>
-            </Paper>
-          </Grid>
-          <Grid item xs={10}>
-            <Paper elevation={6} height={1200}
-              style={{ minHeight: "94.3vh", maxHeight: "94.3vh", padding: 8, overflow: "auto" }}>
-                <Box display="inline">
-                  <Box textAlign="center">
-                    <Button variant="contained" color="primary" style={{ minWidth: '30px', maxWidth: '30px', maxWidth: '30px', maxHeight: '30px', marginTop: 8, marginRight: 2 }} startIcon={<ArrowLeft style={{marginLeft: '10px'}} />}></Button>
-                    <Button onClick = {handleClickNext} variant="contained" color="primary" style={{ minWidth: '30px', maxWidth: '30px', maxWidth: '30px', maxHeight: '30px', marginTop: 8, marginLeft: 2 }} startIcon={<ArrowRight style={{marginLeft: '10px'}} />}></Button>
-                  </Box>
-                </Box>
-                <div class="main-parent">
-                  {grammarSteps.map(step =>
-                    <div class="grammar-list-child">
-                      {grammarExplanations[cnfCurrentStep-1]}
-                      {displayGrammarList(step)}
-                    </div>
-                  )}
-                  <div class="table-child">
-                    <table id="cyk-table" style={{ padding: 8 }}>
-                      {items}
-                    </table>
-                  </div>
-                </div>
-            </Paper>
-          </Grid>
+      <Grid container spacing={2}>
+        <Grid item xs={2}>
+          <Paper elevation={6} height={1200}
+            style={{ minHeight: "70vh", maxHeight: "70vh", padding: 8, overflow: "auto" }}>
+              <Typography variant="h6" style={{ marginLeft: 8, marginTop: 8 }}>
+                Step 1: Enter your grammar
+              </Typography>
+              <Grid style={{ marginLeft: 8 }}>
+                {grammar}
+              </Grid>
+              <IconButton onClick={handleClickTwo} color="primary" style={{ marginBottom: 16 }}>
+                <AddCircleIcon />
+              </IconButton>
+              <Typography variant="h6" style={{ marginTop: 8, marginLeft: 8 }}>
+                Step 2: Enter string to parse
+              </Typography>
+              <TextField
+                placeholder="string"
+                margin="dense"
+                variant="outlined"
+                onChange={handleChangeString}
+                value={string}
+                size="small"
+                style={{ marginBottom: 24, marginLeft: 8 }}>
+              </TextField>
+              <Typography variant="h6" style={{ padding: 8 }}>
+                Step 3: Select Algorithm
+              </Typography>
+              <Button onClick={handleClickCnf} variant="contained" color="primary" startIcon={<PlayArrow />} style={{ justifyContent: "flex-start", width: 214, marginBottom: 8, marginLeft: 8 }}>
+                Convert To CNF
+              </Button>
+              <Button variant="contained" color="primary" startIcon={<PlayArrow />} style={{ justifyContent: "flex-start", width: 214, marginBottom: 8, marginLeft: 8 }}>
+                Convert To GNF
+              </Button>                                
+              <Button onClick={handleClick} variant="contained" color="primary" startIcon={<PlayArrow />} style={{ justifyContent: "flex-start", width: 214, marginBottom: 8, marginLeft: 8 }}>
+                CYK Parse
+              </Button>
+          </Paper>
         </Grid>
+        <Grid item xs={10}>
+          <Paper elevation={6} height={1200}
+            style={{ minHeight: "94.3vh", maxHeight: "94.3vh", padding: 8, overflow: "auto" }}>
+              <Box display="inline">
+                <Box textAlign="center">
+                  <Button disabled={!canGoBack} variant="contained" color="primary" style={{ minWidth: '30px', maxWidth: '30px', maxHeight: '30px', marginTop: 8, marginRight: 2 }} startIcon={<ArrowLeft style={{marginLeft: '10px'}} />}></Button>
+                  <Button onClick = {handleClickNext} disabled={!canGoForwards} variant="contained" color="primary" style={{ minWidth: '30px', maxWidth: '30px', maxHeight: '30px', marginTop: 8, marginLeft: 2 }} startIcon={<ArrowRight style={{marginLeft: '10px'}} />}></Button>
+                </Box>
+              </Box>
+              <div class="main-parent">
+                {grammarSteps.map(step =>
+                  <div class="grammar-list-child">
+                    {grammarExplanations[cnfCurrentStep-1]}
+                    {displayGrammarList(step)}
+                  </div>
+                )}
+                <div class="table-child">
+                  <table id="cyk-table" style={{ padding: 8 }}>
+                    {items}
+                  </table>
+                </div>
+                <div class="tree-child">
+                  <MyTreeComponent/>
+                </div>
+              </div>
+          </Paper>
+        </Grid>
+      </Grid>
     </ThemeProvider>
   );
 }

@@ -2,74 +2,6 @@ body {
   font: 14px "Century Gothic", Futura, sans-serif;
   margin: 20px;
 }
-  
-.square-table, .square-string {
-  float: left;
-  font-size: 24px;
-  line-height: 34px;
-  height: 80px;
-  margin-right: -10px;
-  margin-top: -12px;
-  padding: 0;
-  text-align: center;
-  word-wrap: break-word;  
-}
-
-.square-table {
-  background-color: white;
-  border: 5px solid black;
-  width: 80px;
-}
-
-.square-string {
-  background-color: #fff;
-  border-top: 5px solid black;
-  border-left: none;
-  border-right: none;
-  border-bottom: none;
-  width: 90px;
-}  
-
-.square:focus {
-  outline: none;
-}
-
-.kbd-navigation .square:focus {
-  background: #ddd;
-}
-
-.game {
-  display: flex;
-  flex-direction: row;
-}
-
-.game-info {
-  margin-left: 20px;
-}
-
-.container {
-  background: black;
-  display: inline-block;
-  border: 5px solid black;
-}
-
-.grid {
-  display: grid;
-  grid-template-columns: repeat(3, 80px);
-  grid-template-rows: repeat(3, 80px);
-  grid-gap: 5px;
-}
-
-.cell {
-    /* center the cell content */
-  justify-content: center;
-  align-items: center;
-  display: flex;
-  font-family: Arial;
-  font-size: 3rem;
-  font-weight: bold;
-  background: white;
-}
 
 .btn {
   width: 48px;
@@ -95,9 +27,39 @@ body {
 
 .main-parent {
   margin-top: 100px;
+  margin-bottom: 60px;
+  white-space: nowrap;
 }
 
-.grammar-list-child, .table-child {
+.square-table, .square-string {
+  float: left;
+  font-size: 24px;
+  line-height: 34px;
+  height: 80px;
+  margin-right: -10px;
+  margin-top: -12px;
+  padding: 0;
+  text-align: center;
+  word-wrap: break-word; 
+  white-space: normal; 
+}
+
+.square-table {
+  background-color: white;
+  border: 5px solid black;
+  width: 80px;
+}
+
+.square-string {
+  background-color: #fff;
+  border-top: 5px solid black;
+  border-left: none;
+  border-right: none;
+  border-bottom: none;
+  width: 90px;
+}  
+
+.grammar-list-child, .table-child, .tree-child {
   display: inline-block;
 }
 
@@ -107,6 +69,17 @@ body {
   vertical-align: top;
 }
 
-.table-child {
+.table-child, .tree-child {
   margin-left: 100px;
 }
+
+.tree-child {
+  vertical-align: top;
+  height: 500px;
+  width: 1000px;
+}
+
+/* .tree-child {
+  width: 400px;
+  height: 400px;
+} */
