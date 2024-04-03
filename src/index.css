@@ -31,22 +31,27 @@ body {
   white-space: nowrap;
 }
 
-.square-table, .square-string, .square-string-below-selected, .square-table-selected, .square-table-below-selected, .square-table-above-selected, .square-table-left-selected, .square-table-right-selected {
+.square-table, .square-string, .square-index, .square-string-below-selected, .square-table-selected, .square-table-below-selected, .square-table-above-selected, .square-table-left-selected, .square-table-right-selected {
   float: left;
   font-size: 24px;
   line-height: 34px;
   height: 80px;
-  margin-right: -10px;
-  margin-top: -12px;
   padding: 0;
-  text-align: center;
   word-wrap: break-word; 
-  white-space: normal; 
+  white-space: normal;
+  background-color: white;
 }
 
 .square-table, .square-table-selected, .square-table-above-selected, .square-table-below-selected, .square-table-left-selected, .square-table-right-selected {
-  background-color: white;
   width: 80px;
+  text-align: center;
+}
+
+.square-index {
+  width: 80px;
+  text-align: right;
+  border: 5px transparent;
+  line-height: 75px;
 }
 
 .square-table {
@@ -86,12 +91,12 @@ body {
 }
 
 .square-string, .square-string-selected {
-  background-color: #fff;
+  text-align: center;
   width: 90px;
 }
 
 .square-string {
-  border-top: 5px solid black;
+  border-top: none;
   border-left: none;
   border-right: none;
   border-bottom: none;
@@ -117,10 +122,10 @@ body {
 
 .table-child, .tree-child {
   margin-left: 100px;
+  vertical-align: top;
 }
 
 .tree-child {
-  vertical-align: top;
   height: 500px;
   width: 1000px;
 }
