@@ -189,11 +189,11 @@ function separateTerminals(grammarToConvert) {
     return newGrammar;
 }
 
-export function* convertToCNF() {
+export function* convertToCNF(grammar) {
 
-    var items = {'S': ['abAB'], 'A': ['bAB', ''], 'B': ['BAa', '']};
+    //var items = {'S': ['abAB'], 'A': ['bAB', ''], 'B': ['BAa', '']};
 
-    let grammar1 = removeLambdaProductions(items);
+    let grammar1 = removeLambdaProductions(grammar);
     yield grammar1;
 
     let grammar2 = removeUnitProductions(grammar1);

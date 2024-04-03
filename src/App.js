@@ -67,43 +67,12 @@ const MyTreeComponent = () => {
 
 export default function App() {
 
-  var currentId = 4;
-
-  const handleLeftItem = (event, index) => {
-    console.log(event.target.value);
-    console.log(index);
-    const newLeftItems = [...leftItems];
-    newLeftItems[index] = event.target.value;
-    setLeftItems(newLeftItems);
-  }
-
-  const handleRightItem = (event, index) => {
-    const newRightItems = [...rightItems];
-    newRightItems[index] = event.target.value;
-    setRightItems(newRightItems);
-  }  
-
   let cnfConversion = useRef();
-
-  // For grammar input:
-  // store array in state consisting of arrays of each 2 elements representing the LHS and RHS of a grammar production
-  // map through this array in render and for each element create a GridRow component:
-  // {grammarInput.map((row,index) =>
-  //   <GridRow rowId={index} lhs={row[0]} rhs={row[1] handlerLeft={handleLeftItem} handlerRight={handleRightItem}}
-  // )}
-  // when the '+' button is clicked, a new pair list [0,0] is added to grammarInput
-  // value={lhs} or value={rhs} inside the grid items in GridRow
-  // (could probably get rid of handleLeftItem() and handleRightItem() and just update grammarInput whenever a letter is typed)
 
   const [items,setItems] = useState([]);
   const [grammarInput, setGrammarInput] = useState([['S','abAB'], ['A','bAB'], ['A',''], ['B','BAa'], ['B','']]);
-  const [grammar,setGrammar] = useState([<GridRow rowId={0} handlerLeft={handleLeftItem} handlerRight={handleRightItem}/>,<GridRow rowId={1} handlerLeft={handleLeftItem} handlerRight={handleRightItem}/>,<GridRow rowId={2} handlerLeft={handleLeftItem} handlerRight={handleRightItem}/>,<GridRow rowId={3} handlerLeft={handleLeftItem} handlerRight={handleRightItem}/>,<GridRow rowId={4} handlerLeft={handleLeftItem} handlerRight={handleRightItem}/>]);
   const [string,setString] = useState('abbbb');
   const [cykTable,setCykTable] = useState([]);
-  const [leftItems,setLeftItems] = useState(Array(grammar.length).fill(''));
-  // const [leftItems,setLeftItems] = useState(['S', 'A', 'A', 'B', 'B']);
-  const [rightItems,setRightItems] = useState(Array(grammar.length).fill(''));
-  // const [rightItems,setRightItems] = useState(['abAB', 'bAB', '', 'BAa', '']);
   const [grammarSteps,setGrammarSteps] = useState([]);
   const [canGoBack,setCanGoBack] = useState(false);
   const [canGoForwards,setCanGoForwards] = useState(false);
@@ -113,8 +82,6 @@ export default function App() {
 
   const [tableRunning, setTableRunning] = useState(false);
   const [tableCurrentStep, setTableCurrentStep] = useState(0);
-
-  var currentId = 4;
 
   const grammarExplanations = [
     "Step 1 - remove lambda productions:",
@@ -128,14 +95,23 @@ export default function App() {
     setString(event.target.value);
   }
 
+  const handleGrammarInput = (event, row, side) => {
+    const newGrammar = [...grammarInput];
+    newGrammar[row][side] = event.target.value;
+    setGrammarInput(newGrammar);
+  }
+
   const handleClickParse =() => {
-    setTableRunning(true);
-    setCykTable(cykParse(string));
+    setCnfRunning(true);
+    setCanGoForwards(true);
+    cnfConversion.current = convertToCNF(convertGrammarInput());
+    setGrammarSteps([JSON.parse(JSON.stringify(cnfConversion.current.next().value))]);
+    //setTableRunning(true);
+    //setCykTable(cykParse(string));
   }
 
   const handleClickPlus = () => {
-    currentId += 1;
-    setGrammar([...grammar, <GridRow rowId={currentId} handlerLeft={handleLeftItem} handlerRight={handleRightItem}/>]);
+    setGrammarInput([...grammarInput, ['','']])
   }
 
   const handleClickCnf = () => {
@@ -145,6 +121,19 @@ export default function App() {
     cnfConversion.current = convertToCNF();
     setGrammarSteps([JSON.parse(JSON.stringify(cnfConversion.current.next().value))]);
   }
+
+  function convertGrammarInput() {
+    let grammar = {};
+    for (let rule of grammarInput) {
+      if (Object.keys(grammar).includes(rule[0])) {
+        grammar[rule[0]].push(rule[1]);
+      } else {
+        grammar[rule[0]] = [rule[1]];
+      }
+    }
+    return grammar;
+  }
+
 
   function nextCnf() {
     setCnfCurrentStep(cnfCurrentStep + 1);
@@ -314,7 +303,6 @@ export default function App() {
   }    
 
   return (
-
     <ThemeProvider theme={theme}>
       <Grid container spacing={2}>
         <Grid item xs={2}>
@@ -324,7 +312,9 @@ export default function App() {
                 Step 1: Enter your grammar
               </Typography>
               <Grid style={{ marginLeft: 8 }}>
-                {grammar}
+                {grammarInput.map((row,index) => 
+                  <GridRow rowId={index} lhs={row[0]} rhs={row[1]} handler={handleGrammarInput}></GridRow>
+                )}
               </Grid>
               <IconButton onClick={handleClickPlus} color="primary" style={{ marginBottom: 16 }}>
                 <AddCircleIcon />
@@ -344,15 +334,15 @@ export default function App() {
               <Typography variant="h6" style={{ padding: 8 }}>
                 Step 3: Select Algorithm
               </Typography>
-              <Button onClick={handleClickCnf} variant="contained" color="primary" startIcon={<PlayArrow />} style={{ justifyContent: "flex-start", width: 214, marginBottom: 8, marginLeft: 8 }}>
+              <Button onClick={handleClickParse} variant="contained" color="primary" startIcon={<PlayArrow />} style={{ justifyContent: "flex-start", width: 214, marginBottom: 8, marginLeft: 8 }}>
+                CYK Parse
+              </Button>              
+              <Button variant="contained" color="primary" startIcon={<PlayArrow />} style={{ justifyContent: "flex-start", width: 214, marginBottom: 8, marginLeft: 8 }}>
                 Convert To CNF
               </Button>
               <Button variant="contained" color="primary" startIcon={<PlayArrow />} style={{ justifyContent: "flex-start", width: 214, marginBottom: 8, marginLeft: 8 }}>
                 Convert To GNF
               </Button>                                
-              <Button onClick={handleClickParse} variant="contained" color="primary" startIcon={<PlayArrow />} style={{ justifyContent: "flex-start", width: 214, marginBottom: 8, marginLeft: 8 }}>
-                CYK Parse
-              </Button>
           </Paper>
         </Grid>
         <Grid item xs={10}>
