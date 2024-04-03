@@ -1,7 +1,7 @@
 import Grid from "@mui/material/Grid";
 import { createTheme, ThemeProvider } from "@mui/material/styles";
 import { Box, Paper, TextField, Typography, Button,  IconButton } from "@mui/material";
-import { ArrowLeft, ArrowRight,  PlayArrow } from '@mui/icons-material';
+import { ArrowLeft, ArrowRight,  Opacity,  PlayArrow, SportsRugbySharp } from '@mui/icons-material';
 import AddCircleIcon from '@mui/icons-material/AddCircle';
 import { useState, useRef } from 'react';
 import Tree from 'react-d3-tree';
@@ -18,6 +18,9 @@ const theme = createTheme({
     secondary: {
       main: '#97E63C'
     },
+    // action: {
+    //   disabledBackground: rgba(101,42,210,0.5)
+    // }
   },
 });
 
@@ -182,14 +185,14 @@ export default function App() {
     return <ul class="grammar-list">{grammarList}</ul>;
   }
 
-  function DrawGrid(grid) {
-    console.log(string.length);
+  function drawGrid(grid) {
+    let rowList;
     let itemList = [];
     let identifier = 1;
     let row = 0;
     let cell = 0;
     for (let i=1; i<=string.length; i++) {
-      itemList.push(<tr></tr>)
+      rowList = [];
       cell = 0;
       for (let j=1; j<=i; j++) {
         let squareText = "";
@@ -201,16 +204,65 @@ export default function App() {
         } else {
           squareText = "{" + squareText.slice(0,-1) + "}";
         }
-        itemList.push(<td><div class="square-table" id={identifier}>{squareText}</div></td>)
+        rowList.push(<td><div class="square-table" id={identifier}>{squareText}</div></td>)
         identifier += 1;
         cell += 1;
       }
+      itemList.push(<tr>{rowList}</tr>)
       row += 1;
     }
-    itemList.push(<tr></tr>)
+    rowList = [];
     for (let i=0; i<string.length; i++) {
-      itemList.push(<td><div class="square-string" id={i}>{string[i]}</div></td>)
-    }  
+      rowList.push(<td><div class="square-string" id={i}>{string[i]}</div></td>)
+    }
+    itemList.push(<tr>{rowList}</tr>)
+    setItems(itemList);
+  }    
+
+  function DrawGrid(grid) {
+    // only thing that changes when user clicks next button during table building stage is the table variable increases by 1
+    // that variable is then used in this function to determine which square border should be green etc.
+    // this function should return the list instead of adding it to a state variable
+    // this function will be called down the bottom in the jsx
+    // the table building variable should start at -2
+    // then increase to -1 when 'next' is clicked when CNF is finished and this function should then return an empty table of the correct size
+    // then when it is >0, the variable will be used to determine which square border is green etc.
+    // or should probably start it a 0 then use 'tableCurrentStep-2' in the calculation instead of tableCurrentStep
+    // before doing anything in this function, we first need to check that tableRunning is set to true 
+
+    // if wanting to do animations, could have a state variable that tracks whether backwards or forwards was last clicked
+    // and the value of that determines whether we animate in or animate out the text and green border
+
+    let rowList;
+    let itemList = [];
+    let identifier = 1;
+    let row = 0;
+    let cell = 0;
+    for (let i=1; i<=string.length; i++) {
+      rowList = [];
+      cell = 0;
+      for (let j=1; j<=i; j++) {
+        let squareText = "";
+        for (let k of grid[row][cell]) {
+          squareText = squareText + k + ",";
+        }
+        if (squareText === "") {
+          squareText = "-"
+        } else {
+          squareText = "{" + squareText.slice(0,-1) + "}";
+        }
+        rowList.push(<td><div class="square-table" id={identifier}>{squareText}</div></td>)
+        identifier += 1;
+        cell += 1;
+      }
+      itemList.push(<tr>{rowList}</tr>)
+      row += 1;
+    }
+    rowList = [];
+    for (let i=0; i<string.length; i++) {
+      rowList.push(<td><div class="square-string" id={i}>{string[i]}</div></td>)
+    }
+    itemList.push(<tr>{rowList}</tr>)
     setItems(itemList);
   }
 
@@ -274,7 +326,9 @@ export default function App() {
                 )}
                 <div class="table-child">
                   <table id="cyk-table" style={{ padding: 8 }}>
-                    {items}
+                    <tbody>
+                      {items}
+                    </tbody>
                   </table>
                 </div>
                 <div class="tree-child">
