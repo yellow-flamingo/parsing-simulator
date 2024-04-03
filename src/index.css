@@ -31,7 +31,7 @@ body {
   white-space: nowrap;
 }
 
-.square-table, .square-string, .square-table-selected {
+.square-table, .square-string, .square-string-below-selected, .square-table-selected, .square-table-below-selected, .square-table-above-selected, .square-table-left-selected, .square-table-right-selected {
   float: left;
   font-size: 24px;
   line-height: 34px;
@@ -44,7 +44,7 @@ body {
   white-space: normal; 
 }
 
-.square-table, .square-table-selected {
+.square-table, .square-table-selected, .square-table-above-selected, .square-table-below-selected, .square-table-left-selected, .square-table-right-selected {
   background-color: white;
   width: 80px;
 }
@@ -59,28 +59,51 @@ body {
 
 .square-table-below-selected {
   border-top: 5px solid #42f543;
+  border-bottom: 5px solid black;
+  border-left: 5px solid black;
+  border-right: 5px solid black;
 }
 
 .square-table-above-selected {
+  border-top: 5px solid black;
   border-bottom: 5px solid #42f543;
+  border-left: 5px solid black;
+  border-right: 5px solid black;
 }
 
 .square-table-left-selected {
+  border-top: 5px solid black;
+  border-bottom: 5px solid black;
+  border-left: 5px solid black;
   border-right: 5px solid #42f543;
 }
 
 .square-table-right-selected {
+  border-top: 5px solid black;
+  border-bottom: 5px solid black;
   border-left: 5px solid #42f543;
+  border-right: 5px solid black;
+}
+
+.square-string, .square-string-selected {
+  background-color: #fff;
+  width: 90px;
 }
 
 .square-string {
-  background-color: #fff;
   border-top: 5px solid black;
   border-left: none;
   border-right: none;
   border-bottom: none;
-  width: 90px;
-}  
+}
+
+.square-string-below-selected {
+  border-top: 5px solid green;
+  border-left: none;
+  border-right: none;
+  border-bottom: none;  
+  
+}
 
 .grammar-list-child, .table-child, .tree-child {
   display: inline-block;

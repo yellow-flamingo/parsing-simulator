@@ -220,11 +220,25 @@ export default function App() {
       let numOfCells = 0;
       let cellId;
       let subtractor = 0;
+      let selectedRow;
+      let selectedColumn;
 
       for (let a=string.length; a > 0; a--) {
         numOfCells += a;
       }
 
+      for (let r=0; r<string.length; r++) {
+        for (let c=0; c<=r; c++) {
+          cellId = numOfCells - r - subtractor - (r - c);
+          if (cellId == tableCurrentStep-1) {
+            selectedRow = r;
+            selectedColumn = c;
+          }
+        }
+        subtractor += r;
+      }
+
+      subtractor = 0;
       for (let i=1; i<=string.length; i++) {
         rowList = [];
         cell = 0;
@@ -243,8 +257,28 @@ export default function App() {
             }            
           }
 
-          if (cellId == tableCurrentStep-1) {
-            rowList.push(<td><div class="square-table-selected" id={identifier}>{squareText}</div></td>)
+          if (row == selectedRow) {
+            if (cell == selectedColumn) {
+              console.log(cell);
+              console.log(selectedColumn);
+              rowList.push(<td><div class="square-table-selected" id={identifier}>{squareText}</div></td>)
+            } else if (cell == selectedColumn-1) {
+              rowList.push(<td><div class="square-table-left-selected" id={identifier}>{squareText}</div></td>)
+            } else if (cell == selectedColumn+1) {
+              rowList.push(<td><div class="square-table-right-selected" id={identifier}>{squareText}</div></td>)
+            } else {
+              rowList.push(<td><div class="square-table" id={identifier}>{squareText}</div></td>)
+            }
+
+          } else if (cell == selectedColumn) {
+            if (row == selectedRow-1) {
+              rowList.push(<td><div class="square-table-above-selected" id={identifier}>{squareText}</div></td>)
+            } else if (row == selectedRow+1) {
+              rowList.push(<td><div class="square-table-below-selected" id={identifier}>{squareText}</div></td>)
+            } else {
+              rowList.push(<td><div class="square-table" id={identifier}>{squareText}</div></td>)
+            }
+
           } else {
             rowList.push(<td><div class="square-table" id={identifier}>{squareText}</div></td>)
           }
@@ -260,7 +294,12 @@ export default function App() {
 
       rowList = [];
       for (let i=0; i<string.length; i++) {
-        rowList.push(<td><div class="square-string" id={i}>{string[i]}</div></td>)
+        if (selectedRow == string.length-1 && i == selectedColumn) {
+          console.log("true");
+          rowList.push(<td><div class="square-string-below-selected" id={i}>{string[i]}</div></td>)
+        } else {
+          rowList.push(<td><div class="square-string" id={i}>{string[i]}</div></td>)
+        }
       }
 
       itemList.push(<tr>{rowList}</tr>)
