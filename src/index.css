@@ -54,7 +54,23 @@ body {
 }
 
 .square-table-selected {
-  border: 5px solid green;
+  border: 5px solid #18db42;
+}
+
+.square-table-below-selected {
+  border-top: 5px solid #42f543;
+}
+
+.square-table-above-selected {
+  border-bottom: 5px solid #42f543;
+}
+
+.square-table-left-selected {
+  border-right: 5px solid #42f543;
+}
+
+.square-table-right-selected {
+  border-left: 5px solid #42f543;
 }
 
 .square-string {

@@ -99,6 +99,7 @@ export default function App() {
   const [grammarInput, setGrammarInput] = useState([['S','abAB'], ['A','bAB'], ['A',''], ['B','BAa'], ['B','']]);
   const [grammar,setGrammar] = useState([<GridRow rowId={0} handlerLeft={handleLeftItem} handlerRight={handleRightItem}/>,<GridRow rowId={1} handlerLeft={handleLeftItem} handlerRight={handleRightItem}/>,<GridRow rowId={2} handlerLeft={handleLeftItem} handlerRight={handleRightItem}/>,<GridRow rowId={3} handlerLeft={handleLeftItem} handlerRight={handleRightItem}/>,<GridRow rowId={4} handlerLeft={handleLeftItem} handlerRight={handleRightItem}/>]);
   const [string,setString] = useState('abbbb');
+  const [cykTable,setCykTable] = useState([]);
   const [leftItems,setLeftItems] = useState(Array(grammar.length).fill(''));
   // const [leftItems,setLeftItems] = useState(['S', 'A', 'A', 'B', 'B']);
   const [rightItems,setRightItems] = useState(Array(grammar.length).fill(''));
@@ -112,8 +113,6 @@ export default function App() {
 
   const [tableRunning, setTableRunning] = useState(false);
   const [tableCurrentStep, setTableCurrentStep] = useState(0);
-
-  var cykGrid = [];
 
   var currentId = 4;
 
@@ -129,12 +128,12 @@ export default function App() {
     setString(event.target.value);
   }
 
-  const handleClick =() => {
-    cykGrid = cykParse(string);
-    DrawGrid(cykGrid);
+  const handleClickParse =() => {
+    setTableRunning(true);
+    setCykTable(cykParse(string));
   }
 
-  const handleClickTwo = () => {
+  const handleClickPlus = () => {
     currentId += 1;
     setGrammar([...grammar, <GridRow rowId={currentId} handlerLeft={handleLeftItem} handlerRight={handleRightItem}/>]);
   }
@@ -147,15 +146,10 @@ export default function App() {
     setGrammarSteps([JSON.parse(JSON.stringify(cnfConversion.current.next().value))]);
   }
 
-  const handleClickNext = () => {
-    if (!canGoBack) {
-      setCanGoBack(true);
-    }
-
+  function nextCnf() {
     setCnfCurrentStep(cnfCurrentStep + 1);
 
     let nextStep = cnfConversion.current.next();
-    console.log(grammarSteps);
 
     if (cnfRunning) {
       if (nextStep.done) {
@@ -164,6 +158,36 @@ export default function App() {
         setTableRunning(true);
       } else {
         setGrammarSteps([...grammarSteps, JSON.parse(JSON.stringify(nextStep.value))]);
+      }
+    }    
+  }
+
+  const handleClickNext = () => {
+    if (!canGoBack) {
+      setCanGoBack(true);
+    }
+
+    if (cnfRunning) {
+      nextCnf();
+    } else if (tableRunning) {
+      if (tableCurrentStep == 0) {
+        setCykTable(cykParse(string));
+        setTableCurrentStep(tableCurrentStep + 1);
+      } else {
+        setTableCurrentStep(tableCurrentStep + 1);
+      }
+    }
+  }
+
+  const handleClickPrevious = () => {
+    if (cnfRunning) {
+
+    } else if (tableRunning) {
+      if (tableCurrentStep == 0) {
+        setTableRunning(false);
+        setCnfRunning(true);
+      } else {
+        setTableCurrentStep(tableCurrentStep - 1);
       }
     }
   }
@@ -185,86 +209,64 @@ export default function App() {
     return <ul class="grammar-list">{grammarList}</ul>;
   }
 
-  function drawGrid(grid) {
-    let rowList;
-    let itemList = [];
-    let identifier = 1;
-    let row = 0;
-    let cell = 0;
-    for (let i=1; i<=string.length; i++) {
-      rowList = [];
-      cell = 0;
-      for (let j=1; j<=i; j++) {
-        let squareText = "";
-        for (let k of grid[row][cell]) {
-          squareText = squareText + k + ",";
-        }
-        if (squareText === "") {
-          squareText = "-"
-        } else {
-          squareText = "{" + squareText.slice(0,-1) + "}";
-        }
-        rowList.push(<td><div class="square-table" id={identifier}>{squareText}</div></td>)
-        identifier += 1;
-        cell += 1;
+  function drawParseTable() {
+    if (tableRunning && cykTable.length > 0) {
+      let rowList;
+      let itemList = [];
+      let squareText = "";
+      let identifier = 1;
+      let row = 0;
+      let cell = 0;
+      let numOfCells = 0;
+      let cellId;
+      let subtractor = 0;
+
+      for (let a=string.length; a > 0; a--) {
+        numOfCells += a;
       }
+
+      for (let i=1; i<=string.length; i++) {
+        rowList = [];
+        cell = 0;
+        for (let j=1; j<=i; j++) {
+          cellId = numOfCells - row - subtractor - (row - cell);
+
+          squareText = "";
+          if (cellId <= tableCurrentStep-1) {
+            for (let k of cykTable[row][cell]) {
+              squareText = squareText + k + ",";
+            }
+            if (squareText === "") {
+              squareText = "-"
+            } else {
+              squareText = "{" + squareText.slice(0,-1) + "}";
+            }            
+          }
+
+          if (cellId == tableCurrentStep-1) {
+            rowList.push(<td><div class="square-table-selected" id={identifier}>{squareText}</div></td>)
+          } else {
+            rowList.push(<td><div class="square-table" id={identifier}>{squareText}</div></td>)
+          }
+
+          identifier += 1;
+          cell += 1;
+        }
+
+        itemList.push(<tr>{rowList}</tr>)
+        subtractor += row;
+        row += 1;
+      }
+
+      rowList = [];
+      for (let i=0; i<string.length; i++) {
+        rowList.push(<td><div class="square-string" id={i}>{string[i]}</div></td>)
+      }
+
       itemList.push(<tr>{rowList}</tr>)
-      row += 1;
+      return itemList;
     }
-    rowList = [];
-    for (let i=0; i<string.length; i++) {
-      rowList.push(<td><div class="square-string" id={i}>{string[i]}</div></td>)
-    }
-    itemList.push(<tr>{rowList}</tr>)
-    setItems(itemList);
   }    
-
-  function DrawGrid(grid) {
-    // only thing that changes when user clicks next button during table building stage is the table variable increases by 1
-    // that variable is then used in this function to determine which square border should be green etc.
-    // this function should return the list instead of adding it to a state variable
-    // this function will be called down the bottom in the jsx
-    // the table building variable should start at -2
-    // then increase to -1 when 'next' is clicked when CNF is finished and this function should then return an empty table of the correct size
-    // then when it is >0, the variable will be used to determine which square border is green etc.
-    // or should probably start it a 0 then use 'tableCurrentStep-2' in the calculation instead of tableCurrentStep
-    // before doing anything in this function, we first need to check that tableRunning is set to true 
-
-    // if wanting to do animations, could have a state variable that tracks whether backwards or forwards was last clicked
-    // and the value of that determines whether we animate in or animate out the text and green border
-
-    let rowList;
-    let itemList = [];
-    let identifier = 1;
-    let row = 0;
-    let cell = 0;
-    for (let i=1; i<=string.length; i++) {
-      rowList = [];
-      cell = 0;
-      for (let j=1; j<=i; j++) {
-        let squareText = "";
-        for (let k of grid[row][cell]) {
-          squareText = squareText + k + ",";
-        }
-        if (squareText === "") {
-          squareText = "-"
-        } else {
-          squareText = "{" + squareText.slice(0,-1) + "}";
-        }
-        rowList.push(<td><div class="square-table" id={identifier}>{squareText}</div></td>)
-        identifier += 1;
-        cell += 1;
-      }
-      itemList.push(<tr>{rowList}</tr>)
-      row += 1;
-    }
-    rowList = [];
-    for (let i=0; i<string.length; i++) {
-      rowList.push(<td><div class="square-string" id={i}>{string[i]}</div></td>)
-    }
-    itemList.push(<tr>{rowList}</tr>)
-    setItems(itemList);
-  }
 
   return (
 
@@ -279,7 +281,7 @@ export default function App() {
               <Grid style={{ marginLeft: 8 }}>
                 {grammar}
               </Grid>
-              <IconButton onClick={handleClickTwo} color="primary" style={{ marginBottom: 16 }}>
+              <IconButton onClick={handleClickPlus} color="primary" style={{ marginBottom: 16 }}>
                 <AddCircleIcon />
               </IconButton>
               <Typography variant="h6" style={{ marginTop: 8, marginLeft: 8 }}>
@@ -303,7 +305,7 @@ export default function App() {
               <Button variant="contained" color="primary" startIcon={<PlayArrow />} style={{ justifyContent: "flex-start", width: 214, marginBottom: 8, marginLeft: 8 }}>
                 Convert To GNF
               </Button>                                
-              <Button onClick={handleClick} variant="contained" color="primary" startIcon={<PlayArrow />} style={{ justifyContent: "flex-start", width: 214, marginBottom: 8, marginLeft: 8 }}>
+              <Button onClick={handleClickParse} variant="contained" color="primary" startIcon={<PlayArrow />} style={{ justifyContent: "flex-start", width: 214, marginBottom: 8, marginLeft: 8 }}>
                 CYK Parse
               </Button>
           </Paper>
@@ -313,7 +315,7 @@ export default function App() {
             style={{ minHeight: "94.3vh", maxHeight: "94.3vh", padding: 8, overflow: "auto" }}>
               <Box display="inline">
                 <Box textAlign="center">
-                  <Button disabled={!canGoBack} variant="contained" color="primary" style={{ minWidth: '30px', maxWidth: '30px', maxHeight: '30px', marginTop: 8, marginRight: 2 }} startIcon={<ArrowLeft style={{marginLeft: '10px'}} />}></Button>
+                  <Button onClick = {handleClickPrevious} disabled={!canGoBack} variant="contained" color="primary" style={{ minWidth: '30px', maxWidth: '30px', maxHeight: '30px', marginTop: 8, marginRight: 2 }} startIcon={<ArrowLeft style={{marginLeft: '10px'}} />}></Button>
                   <Button onClick = {handleClickNext} disabled={!canGoForwards} variant="contained" color="primary" style={{ minWidth: '30px', maxWidth: '30px', maxHeight: '30px', marginTop: 8, marginLeft: 2 }} startIcon={<ArrowRight style={{marginLeft: '10px'}} />}></Button>
                 </Box>
               </Box>
@@ -327,7 +329,7 @@ export default function App() {
                 <div class="table-child">
                   <table id="cyk-table" style={{ padding: 8 }}>
                     <tbody>
-                      {items}
+                      {drawParseTable()}
                     </tbody>
                   </table>
                 </div>
