@@ -199,6 +199,15 @@ export default function App() {
   }
 
   function drawParseTable() {
+
+    // to fix the borde rissue:
+    // 1. remove divs from <td> elements
+    // 2. use border-collapse: collapse in <table>
+    // 3. make borders that join 2.5px each so they don't look extra thick
+    // 4. then only highlight the current border - as cells don't overlap the black shouldn't render over the green
+    // however, this might not look right as there will still be some black next to the green from neighbouring borders
+    // OR we could just make the green border only 2.5px
+
     if (tableRunning && cykTable.length > 0) {
       let rowList;
       let itemList = [];
