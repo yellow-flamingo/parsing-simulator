@@ -24,47 +24,6 @@ const theme = createTheme({
   },
 });
 
-const MyTreeComponent = () => {
-
-  const treeData = {
-    name: 'CEO',
-    children: [
-      {
-        name: 'Manager',
-        attributes: {
-          department: 'Production',
-        },
-        children: [
-          {
-            name: 'Foreman',
-            attributes: {
-              department: 'Fabrication',
-            },
-            children: [
-              {
-                name: 'Worker',
-              },
-            ],
-          },
-          {
-            name: 'Foreman',
-            attributes: {
-              department: 'Assembly',
-            },
-            children: [
-              {
-                name: 'Worker',
-              },
-            ],
-          },
-        ],
-      },
-    ],
-  };
-
-  return <Tree data={treeData} orientation="vertical" zoomable={false} draggable={false}/>
-};
-
 export default function App() {
 
   let cnfConversion = useRef();
@@ -374,9 +333,6 @@ export default function App() {
                       {drawParseTable()}
                     </tbody>
                   </table>
-                </div>
-                <div class="tree-child">
-                  <MyTreeComponent/>
                 </div>
               </div>
           </Paper>
