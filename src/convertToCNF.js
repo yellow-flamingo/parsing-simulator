@@ -1,4 +1,4 @@
-const alphabet = ['A','B','C','D','E','F','G','H','I','J','K','L','M','N','O','P','Q','R','S','T','U','V','W','X','Y','Z']
+const alphabet = Array.from(Array(26)).map((elem,i) => String.fromCharCode(i+65));
 
 function existsProduction(string, grammar) {
     var derivations = [];
@@ -51,8 +51,7 @@ function removeCharacter(str, index) {
 
 function removeLambdaProductions(grammarToConvert) {
 
-    // need to re-write using recursion
-    // also need to take into account if a lambda production is found and that's the only production from that non-terminal - would then need to remove any productions involving that non-terminal all together
+    // need to take into account if a lambda production is found and that's the only production from that non-terminal - would then need to remove any productions involving that non-terminal all together
 
     var newGrammar = {...grammarToConvert};
     
@@ -119,9 +118,6 @@ function removeUnitProductions(grammarToConvert) {
 }
 
 function ensureTwoSymbols(grammarToConvert) {
-
-    // should probably use recursion when decreasing the length of the string
-
     var newGrammar = {...grammarToConvert};
     var newNonTerminal;
     var subString = '';
@@ -181,6 +177,25 @@ function separateTerminals(grammarToConvert) {
                     }
                     let newItem = newNonTerminal + item[1];
                     newGrammar[key][index] = newItem;
+                } else if (!(nonTerminals.includes(item[0])) && !(nonTerminals.includes(item[1]))) {
+                    if (existsProduction(item[0], newGrammar)) {
+                        newNonTerminal = findNonTerminal(item[0], newGrammar);
+                    } else {
+                        newNonTerminal = nextNonTerminal(nonTerminals);
+                        newGrammar[newNonTerminal] = [item[0]];
+                        nonTerminals.push(newNonTerminal);
+                    }
+                    let newItem = newNonTerminal;
+                    
+                    if (existsProduction(item[1], newGrammar)) {
+                        newNonTerminal = findNonTerminal(item[1], newGrammar);
+                    } else {
+                        newNonTerminal = nextNonTerminal(nonTerminals);
+                        newGrammar[newNonTerminal] = [item[1]];
+                        nonTerminals.push(newNonTerminal);
+                    }
+                    newItem = newItem + newNonTerminal;
+                    newGrammar[key][index] = newItem;              
                 }
             }
         }

@@ -106,8 +106,6 @@ export default function App() {
     setCanGoForwards(true);
     cnfConversion.current = convertToCNF(convertGrammarInput());
     setGrammarSteps([JSON.parse(JSON.stringify(cnfConversion.current.next().value))]);
-    //setTableRunning(true);
-    //setCykTable(cykParse(string));
   }
 
   const handleClickPlus = () => {
@@ -160,7 +158,7 @@ export default function App() {
       nextCnf();
     } else if (tableRunning) {
       if (tableCurrentStep == 0) {
-        setCykTable(cykParse(string));
+        setCykTable(cykParse(string, grammarSteps[grammarSteps.length-1]));
         setTableCurrentStep(tableCurrentStep + 1);
       } else {
         setTableCurrentStep(tableCurrentStep + 1);
@@ -364,9 +362,9 @@ export default function App() {
                 </Box>
               </Box>
               <div class="main-parent">
-                {grammarSteps.map(step =>
+                {grammarSteps.map((step,index) =>
                   <div class="grammar-list-child">
-                    {grammarExplanations[cnfCurrentStep-1]}
+                    {grammarExplanations[index]}
                     {displayGrammarList(step)}
                   </div>
                 )}

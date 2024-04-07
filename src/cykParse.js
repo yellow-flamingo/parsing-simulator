@@ -30,8 +30,8 @@ function getCombinations(string) {
     return combinations;
 }
 
-export function cykParse(stringToParse) {
-    var items = {'S': ['CE','CG','CH','CD'], 'A': ['DF','DA','DB','b'], 'B': ['BI','BC','AC','a','DF','DA','DB','b'], 'C': ['a'], 'D': ['b'], 'E': ['DF'], 'F': ['AB'], 'G': ['DA'], 'H': ['DB'], 'I': ['AC']};
+export function cykParse(stringToParse, items) {
+    //var items = {'S': ['CE','CG','CH','CD'], 'A': ['DF','DA','DB','b'], 'B': ['BI','BC','AC','a','DF','DA','DB','b'], 'C': ['a'], 'D': ['b'], 'E': ['DF'], 'F': ['AB'], 'G': ['DA'], 'H': ['DB'], 'I': ['AC']};
     var n = stringToParse.length;
     var cykDict = {};
     var cykTable = [];
