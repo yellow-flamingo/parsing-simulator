@@ -1,0 +1,13 @@
+{
+  "files": {
+    "main.css": "/parsing-simulator/static/css/main.a9fd73e0.css",
+    "main.js": "/parsing-simulator/static/js/main.f51d7c6b.js",
+    "index.html": "/parsing-simulator/index.html",
+    "main.a9fd73e0.css.map": "/parsing-simulator/static/css/main.a9fd73e0.css.map",
+    "main.f51d7c6b.js.map": "/parsing-simulator/static/js/main.f51d7c6b.js.map"
+  },
+  "entrypoints": [
+    "static/css/main.a9fd73e0.css",
+    "static/js/main.f51d7c6b.js"
+  ]
+}
