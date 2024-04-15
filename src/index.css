@@ -7,20 +7,6 @@ body {
   border-collapse: collapse;
 }
 
-.grammar-list {
-  list-style-type: none;
-  padding: 0px;
-}
-
-.grammar-list li{
-  font-size: 24px;
-  font-weight: bold;
-  margin-top: 5px;
-  margin-bottom: 10px;
-  margin-right: 15px;
-  margin-left: 15px;
-}
-
 .main-parent {
   margin-top: 100px;
   margin-bottom: 60px;
@@ -106,17 +92,50 @@ body {
   border-left: none;
   border-right: none;
   border-bottom: none;  
-  
 }
 
-.grammar-list-child, .table-child, .tree-child {
+.grammar-list-child, .table-child, .explanations, .tree-child {
   display: inline-block;
+}
+
+.grammar-list {
+  list-style-type: none;
+  padding: 0px;
+}
+
+.grammar-list li{
+  font-size: 24px;
+  font-weight: bold;
+  margin-top: 5px;
+  margin-bottom: 10px;
+  margin-right: 15px;
+  margin-left: 15px;
 }
 
 .grammar-list-child {
   border: 5px solid black;
   margin-left: 60px;
   vertical-align: top;
+}
+
+.explanations {
+  margin-left: 10px;
+  padding: 0px;
+  vertical-align: top;
+}
+
+.explanations li{
+  font-size: 24px;
+  margin-top: 0px;
+  margin-bottom: 25px;
+}
+
+.explanations-child {
+  list-style-type: none;
+}
+
+.bold {
+  font-weight: bold;
 }
 
 .table-child, .tree-child {

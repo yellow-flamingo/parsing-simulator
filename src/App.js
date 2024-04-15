@@ -1,13 +1,13 @@
 import Grid from "@mui/material/Grid";
 import { createTheme, ThemeProvider } from "@mui/material/styles";
 import { Box, Paper, TextField, Typography, Button,  IconButton } from "@mui/material";
-import { ArrowLeft, ArrowRight,  Opacity,  PlayArrow, SportsRugbySharp } from '@mui/icons-material';
+import { ArrowLeft, ArrowRight,  ConstructionOutlined,  Opacity,  PlayArrow, SportsRugbySharp } from '@mui/icons-material';
 import AddCircleIcon from '@mui/icons-material/AddCircle';
 import { useState, useRef } from 'react';
 import Tree from 'react-d3-tree';
 import './index.css';
 import GridRow from "./GridRow";
-import { cykParse } from "./cykParse";
+import { cykParse, getExplanations } from "./cykParse";
 import { convertToCNF } from "./convertToCNF";
 
 const theme = createTheme({
@@ -27,6 +27,7 @@ const theme = createTheme({
 export default function App() {
 
   let cnfConversion = useRef();
+  let tableExplanations = useRef();
 
   const [items,setItems] = useState([]);
   const [grammarInput, setGrammarInput] = useState([['S','abAB'], ['A','bAB'], ['A',''], ['B','BAa'], ['B','']]);
@@ -38,9 +39,13 @@ export default function App() {
 
   const [cnfRunning, setCnfRunning] = useState(false);
   const [cnfCurrentStep, setCnfCurrentStep] = useState(0);
+  let cnfStep = useRef(0);
 
   const [tableRunning, setTableRunning] = useState(false);
   const [tableCurrentStep, setTableCurrentStep] = useState(0);
+
+  const [grammarStepsHistory, setGrammarStepsHistory] = useState([]);
+  const [tableDataHistory, setTableDataHistory] = useState([]);
 
   const grammarExplanations = [
     "Step 1 - remove lambda productions:",
@@ -64,19 +69,16 @@ export default function App() {
     setCnfRunning(true);
     setCanGoForwards(true);
     cnfConversion.current = convertToCNF(convertGrammarInput());
-    setGrammarSteps([JSON.parse(JSON.stringify(cnfConversion.current.next().value))]);
+    let nextStep = cnfConversion.current.next();
+    setGrammarStepsHistory([[JSON.parse(JSON.stringify(nextStep.value))]]);
+    setGrammarSteps([JSON.parse(JSON.stringify(nextStep.value))]);
+    setCnfCurrentStep(cnfCurrentStep + 1);
+    cnfStep.current += 1;
+    console.log(cnfStep.current);
   }
 
   const handleClickPlus = () => {
     setGrammarInput([...grammarInput, ['','']])
-  }
-
-  const handleClickCnf = () => {
-    setCnfRunning(true);
-    setCanGoForwards(true);
-    setCnfCurrentStep(1);
-    cnfConversion.current = convertToCNF();
-    setGrammarSteps([JSON.parse(JSON.stringify(cnfConversion.current.next().value))]);
   }
 
   function convertGrammarInput() {
@@ -93,19 +95,32 @@ export default function App() {
 
 
   function nextCnf() {
-    setCnfCurrentStep(cnfCurrentStep + 1);
+    if (cnfStep.current >= grammarStepsHistory.length) {
+      let nextStep = cnfConversion.current.next();
 
-    let nextStep = cnfConversion.current.next();
-
-    if (cnfRunning) {
-      if (nextStep.done) {
-        setGrammarSteps([grammarSteps[grammarSteps.length-1]]);
+      if (cnfRunning) {
+        if (nextStep.done) {
+          setGrammarStepsHistory([...grammarStepsHistory, [grammarSteps[grammarSteps.length-1]]]);
+          setGrammarSteps([grammarSteps[grammarSteps.length-1]]);
+          setCnfRunning(false);
+          setTableRunning(true);
+        } else {
+          setGrammarStepsHistory([...grammarStepsHistory, [...grammarSteps, JSON.parse(JSON.stringify(nextStep.value))]]);
+          setGrammarSteps([...grammarSteps, JSON.parse(JSON.stringify(nextStep.value))]);
+        }
+      } 
+    } else {
+      if (cnfStep.current == grammarStepsHistory.length-1) {
+        setGrammarSteps(grammarStepsHistory[cnfStep.current]);
         setCnfRunning(false);
         setTableRunning(true);
       } else {
-        setGrammarSteps([...grammarSteps, JSON.parse(JSON.stringify(nextStep.value))]);
+        setGrammarSteps(grammarStepsHistory[cnfStep.current]);
       }
-    }    
+    }
+    
+    setCnfCurrentStep(cnfCurrentStep + 1);
+    cnfStep.current += 1;
   }
 
   const handleClickNext = () => {
@@ -114,28 +129,44 @@ export default function App() {
     }
 
     if (cnfRunning) {
+      console.log("CNF running");
       nextCnf();
     } else if (tableRunning) {
       if (tableCurrentStep == 0) {
         setCykTable(cykParse(string, grammarSteps[grammarSteps.length-1]));
-        setTableCurrentStep(tableCurrentStep + 1);
       } else {
-        setTableCurrentStep(tableCurrentStep + 1);
+        if (tableCurrentStep === 1 && !tableExplanations.current) {
+          tableExplanations.current = getExplanations(string, grammarSteps[grammarSteps.length-1], cykTable);
+        }
+        if (tableCurrentStep > tableDataHistory.length) {
+          let nextStep = tableExplanations.current.next().value;
+          setTableDataHistory([...tableDataHistory, JSON.parse(JSON.stringify(nextStep))]);
+        }
       }
+      setTableCurrentStep(tableCurrentStep + 1);
     }
+    console.log(cnfStep.current);
   }
 
   const handleClickPrevious = () => {
-    if (cnfRunning) {
-
+    if (cnfRunning && cnfStep.current > 1) {
+      console.log("true");
+      setCnfCurrentStep(cnfCurrentStep - 1);
+      cnfStep.current -= 1;
+      setGrammarSteps(grammarStepsHistory[cnfCurrentStep-2]);
     } else if (tableRunning) {
-      if (tableCurrentStep == 0) {
+      if (tableCurrentStep == 1) {
         setTableRunning(false);
         setCnfRunning(true);
+        setTableCurrentStep(tableCurrentStep - 1);
       } else {
         setTableCurrentStep(tableCurrentStep - 1);
       }
+    } else {
+      setCanGoBack(false);
     }
+
+    console.log(cnfStep.current);
   }
 
   function displayGrammarList(grammar) {
@@ -156,16 +187,7 @@ export default function App() {
   }
 
   function drawParseTable() {
-
-    // to fix the borde rissue:
-    // 1. remove divs from <td> elements
-    // 2. use border-collapse: collapse in <table>
-    // 3. make borders that join 2.5px each so they don't look extra thick
-    // 4. then only highlight the current border - as cells don't overlap the black shouldn't render over the green
-    // however, this might not look right as there will still be some black next to the green from neighbouring borders
-    // OR we could just make the green border only 2.5px
-
-    if (tableRunning && cykTable.length > 0) {
+    if (tableRunning && cykTable.length > 0 && tableCurrentStep > 0) {
       let rowList;
       let itemList = [];
       let squareText = "";
@@ -218,32 +240,6 @@ export default function App() {
             rowList.push(<td><div class="square-table" id={identifier}>{squareText}</div></td>)
           }
 
-          // if (row == selectedRow) {
-          //   if (cell == selectedColumn) {
-          //     console.log(cell);
-          //     console.log(selectedColumn);
-          //     rowList.push(<td><div class="square-table-selected" id={identifier}>{squareText}</div></td>)
-          //   } else if (cell == selectedColumn-1) {
-          //     rowList.push(<td><div class="square-table-left-selected" id={identifier}>{squareText}</div></td>)
-          //   } else if (cell == selectedColumn+1) {
-          //     rowList.push(<td><div class="square-table-right-selected" id={identifier}>{squareText}</div></td>)
-          //   } else {
-          //     rowList.push(<td><div class="square-table" id={identifier}>{squareText}</div></td>)
-          //   }
-
-          // } else if (cell == selectedColumn) {
-          //   if (row == selectedRow-1) {
-          //     rowList.push(<td><div class="square-table-above-selected" id={identifier}>{squareText}</div></td>)
-          //   } else if (row == selectedRow+1) {
-          //     rowList.push(<td><div class="square-table-below-selected" id={identifier}>{squareText}</div></td>)
-          //   } else {
-          //     rowList.push(<td><div class="square-table" id={identifier}>{squareText}</div></td>)
-          //   }
-
-          // } else {
-          //   rowList.push(<td><div class="square-table" id={identifier}>{squareText}</div></td>)
-          // }
-
           identifier += 1;
           cell += 1;
         }
@@ -256,7 +252,6 @@ export default function App() {
       rowList = [<td><div class="square-string"></div></td>];
       for (let i=0; i<string.length; i++) {
         if (selectedRow == string.length-1 && i == selectedColumn) {
-          console.log("true");
           rowList.push(<td><div class="square-string" id={i}>{string[i]}</div></td>)
         } else {
           rowList.push(<td><div class="square-string" id={i}>{string[i]}</div></td>)
@@ -266,7 +261,56 @@ export default function App() {
       itemList.push(<tr>{rowList}</tr>)
       return itemList;
     }
-  }    
+  }
+  
+  function displayExplanations() {
+    if (tableRunning && tableCurrentStep > 1) {
+      var data = tableDataHistory[tableCurrentStep-2];
+      var explList = [];
+
+      explList.push(<li>substring {data.substring}:</li>)
+
+      if (data.substring.length === 1) {
+        for (let nonterminal of data.nonterminals[0][0]) {
+          explList.push(<li class="bold">&nbsp; {nonterminal} &#8594; {data.substring}</li>)
+        }
+      } else {
+        for (let i=0; i<data.combinations.length; i++) {
+          let item = data.combinations[i];
+          if (item.length == 1) {
+            explList.push(<li>&nbsp; {item[0]}</li>)
+          } else {
+            explList.push(<li>&nbsp; {item[0]}, {item[1]}:</li>)
+  
+            let string1 = '{';
+            let string2 = '{';
+            for (let elem of data.nonterminals[i][0]) {
+              string1 = string1 + elem + ',';
+            }
+            string1 = string1.slice(0,-1) + '}';
+            
+            for (let elem of data.nonterminals[i][1]) {
+              string2 = string2 + elem + ',';
+            }
+            string2 = string2.slice(0,-1) + '}';
+  
+            explList.push(<li>&nbsp; &nbsp; {string1} X {string2}</li>)
+  
+            let interString = '';
+            for (let pair of data.products[i]) {
+              interString = interString + pair + ', ';
+            }
+            explList.push(<li>&nbsp; &nbsp; {interString.slice(0,-2)}</li>)
+            for (let prod of data.productions[i]) {
+              explList.push(<li class="bold">&nbsp; &nbsp; {prod[0]} &#8594; {prod[1]}</li>)
+            }
+          }
+        }
+      }
+    }
+
+    return <ul class="explanations-child">{explList}</ul>
+  }
 
   return (
     <ThemeProvider theme={theme}>
@@ -333,6 +377,11 @@ export default function App() {
                       {drawParseTable()}
                     </tbody>
                   </table>
+                </div>
+                <div class="explanations">
+                  <ul class="explanations-child">
+                    {displayExplanations()}
+                  </ul>
                 </div>
               </div>
           </Paper>
