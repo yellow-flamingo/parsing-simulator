@@ -94,7 +94,7 @@ body {
   border-bottom: none;  
 }
 
-.grammar-list-child, .table-child, .explanations, .tree-child {
+.grammar-list-main, .table-child, .explanations, .tree-child {
   display: inline-block;
 }
 
@@ -115,7 +115,14 @@ body {
 .grammar-list-child {
   border: 5px solid black;
   margin-left: 60px;
+  /*vertical-align: top;*/
+}
+
+.grammar-list-title {
+  margin-left: 60px;
   vertical-align: top;
+  font-size: 24px;
+  font-weight: bold;
 }
 
 .explanations {

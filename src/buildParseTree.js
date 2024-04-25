@@ -97,6 +97,10 @@ function cykParse(stringToParse) {
                         if (items[key].includes(val)) {
                             currentList.push(key);
                             if (addToBackpointers) {
+                                // need to update this:
+                                // currently if the same non-terminal can be found from 2 different pairs
+                                // aka if there are multiple parse trees for the given string
+                                // they will override each other when adding to backpointers
                                 let left_sub = combo[0];
                                 let right_sub = combo[1];
                                 let left_nonterminal = val[0];
@@ -124,7 +128,7 @@ function cykParse(stringToParse) {
     return backpointers;
 }
 
-function buildParseTree(node) {
+export function buildParseTree(node) {
     if (node.right == null) {
         if (node.left == null) {
             return node.value;

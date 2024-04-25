@@ -366,9 +366,13 @@ export default function App() {
               </Box>
               <div class="main-parent">
                 {grammarSteps.map((step,index) =>
-                  <div class="grammar-list-child">
-                    {grammarExplanations[index]}
-                    {displayGrammarList(step)}
+                  <div class="grammar-list-main">
+                    <div class="grammar-list-title">
+                      {grammarExplanations[cnfStep.current < 5 ? index : 4]}
+                    </div>
+                    <div class="grammar-list-child">
+                      {displayGrammarList(step)}
+                    </div>
                   </div>
                 )}
                 <div class="table-child">
