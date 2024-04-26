@@ -47,6 +47,10 @@ export default function App() {
   const [grammarStepsHistory, setGrammarStepsHistory] = useState([]);
   const [tableDataHistory, setTableDataHistory] = useState([]);
 
+  const [betweenRunning, setBetweenRunning] = useState(false);
+
+  const [cnfFinished, setCnfFinished] = useState(false);
+
   const grammarExplanations = [
     "Step 1 - remove lambda productions:",
     "Step 2 - remove unit productions:",
@@ -101,31 +105,37 @@ export default function App() {
       console.log("current step greater than / equal to history length");
       let nextStep = cnfConversion.current.next();
 
-      if (cnfRunning) {
-        if (nextStep.done) {
+      if (nextStep.done) {
+        console.log(nextStep.value);
+        if (cnfFinished == false) {
+          console.log("CNF not finihsed")
           setGrammarStepsHistory([...grammarStepsHistory, [grammarSteps[grammarSteps.length-1]]]);
-          setGrammarSteps([grammarSteps[grammarSteps.length-1]]);
-          setCnfRunning(false);
-          setTableRunning(true);
-        } else {
-          setGrammarStepsHistory([...grammarStepsHistory, [...grammarSteps, JSON.parse(JSON.stringify(nextStep.value))]]);
-          setGrammarSteps([...grammarSteps, JSON.parse(JSON.stringify(nextStep.value))]);
+          setGrammarSteps([grammarSteps[grammarSteps.length-1]]);    
+          setCnfFinished(true);
+          setCnfCurrentStep(cnfCurrentStep + 1);
+          cnfStep.current += 1;                          
         }
-      }
-    } else {
-      if (cnfStep.current == grammarStepsHistory.length) {
-        console.log("current step equals history length");
-        setGrammarSteps(grammarStepsHistory[cnfStep.current]);
         setCnfRunning(false);
         setTableRunning(true);
       } else {
-        console.log("current step does not equal history length");
-        setGrammarSteps(grammarStepsHistory[cnfStep.current]);
+        setGrammarStepsHistory([...grammarStepsHistory, [...grammarSteps, JSON.parse(JSON.stringify(nextStep.value))]]);
+        setGrammarSteps([...grammarSteps, JSON.parse(JSON.stringify(nextStep.value))]);
+        setCnfCurrentStep(cnfCurrentStep + 1);
+        cnfStep.current += 1;      
       }
+
+    } else {
+      if (grammarStepsHistory.length == 5 && cnfStep.current == 4) {
+        setCnfRunning(false);
+        setTableRunning(true);        
+      }
+      setGrammarSteps(grammarStepsHistory[cnfStep.current]);
+      setCnfCurrentStep(cnfCurrentStep + 1);
+      cnfStep.current += 1;
     }
     
-    setCnfCurrentStep(cnfCurrentStep + 1);
-    cnfStep.current += 1;
+    //setCnfCurrentStep(cnfCurrentStep + 1);
+    //cnfStep.current += 1;
   }
 
   const handleClickNext = () => {
@@ -137,6 +147,7 @@ export default function App() {
       console.log("CNF running");
       nextCnf();
     } else if (tableRunning) {
+      console.log("table running");
       if (tableCurrentStep == 0) {
         setCykTable(cykParse(string, grammarSteps[grammarSteps.length-1]));
       } else {
@@ -149,6 +160,11 @@ export default function App() {
         }
       }
       setTableCurrentStep(tableCurrentStep + 1);
+    } else if (betweenRunning) {
+      setCykTable(cykParse(string, grammarSteps[grammarSteps.length-1]));
+      setBetweenRunning(false);
+      setTableRunning(true);
+      setTableCurrentStep(tableCurrentStep + 1);
     }
   }
 
@@ -159,14 +175,21 @@ export default function App() {
       cnfStep.current -= 1;
       setGrammarSteps(grammarStepsHistory[cnfCurrentStep-2]);
     } else if (tableRunning) {
+      console.log("table current step: ", tableCurrentStep);
       console.log("table running");
       if (tableCurrentStep == 1) {
         setTableRunning(false);
-        setCnfRunning(true);
+        setBetweenRunning(true);
         setTableCurrentStep(tableCurrentStep - 1);
       } else {
         setTableCurrentStep(tableCurrentStep - 1);
       }
+    } else if (betweenRunning) {
+      setCnfCurrentStep(cnfCurrentStep - 1);
+      cnfStep.current -= 1;
+      setGrammarSteps(grammarStepsHistory[cnfCurrentStep-2]);
+      setBetweenRunning(false);
+      setCnfRunning(true);      
     } else {
       setCanGoBack(false);
     }

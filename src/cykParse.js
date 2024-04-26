@@ -1,38 +1,4 @@
-function getSubstrings(stringToParse, n) {
-    let substrings = [];
-    for (let i=0; i<n; i++) {
-        for (let j=0; j<n-i; j++) {
-            let stringToAdd = stringToParse[j];
-            for (let k=1; k<i+1; k++) {
-                stringToAdd += stringToParse[j+k];
-            }
-            substrings.push(stringToAdd)
-        }
-    }
-    return substrings;
-}
-
-function cartesianProduct(list1, list2) {
-    var values = [];
-    for (var val1 of list1) {
-        for (var val2 of list2) {
-            values.push(val1 + val2);
-        }
-    }
-    return values;
-}
-
-function getCombinations(string) {
-    var combinations = [];
-    if (string.length == 1) {
-        combinations.push([string]);
-    } else {
-        for (let i=1; i<string.length; i++) {
-            combinations.push([string.slice(0,i), string.slice(i,string.length)]);
-        }
-    }
-    return combinations;
-}
+import { getSubstrings, cartesianProduct, getCombinations } from "./cykHelpers";
 
 export function cykParse(stringToParse, items) {
     //var items = {'S': ['CE','CG','CH','CD'], 'A': ['DF','DA','DB','b'], 'B': ['BI','BC','AC','a','DF','DA','DB','b'], 'C': ['a'], 'D': ['b'], 'E': ['DF'], 'F': ['AB'], 'G': ['DA'], 'H': ['DB'], 'I': ['AC']};
