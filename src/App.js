@@ -95,7 +95,10 @@ export default function App() {
 
 
   function nextCnf() {
+    console.log("history length: ", grammarStepsHistory.length);
+    console.log("CNF current step: ", cnfStep.current);
     if (cnfStep.current >= grammarStepsHistory.length) {
+      console.log("current step greater than / equal to history length");
       let nextStep = cnfConversion.current.next();
 
       if (cnfRunning) {
@@ -108,13 +111,15 @@ export default function App() {
           setGrammarStepsHistory([...grammarStepsHistory, [...grammarSteps, JSON.parse(JSON.stringify(nextStep.value))]]);
           setGrammarSteps([...grammarSteps, JSON.parse(JSON.stringify(nextStep.value))]);
         }
-      } 
+      }
     } else {
-      if (cnfStep.current == grammarStepsHistory.length-1) {
+      if (cnfStep.current == grammarStepsHistory.length) {
+        console.log("current step equals history length");
         setGrammarSteps(grammarStepsHistory[cnfStep.current]);
         setCnfRunning(false);
         setTableRunning(true);
       } else {
+        console.log("current step does not equal history length");
         setGrammarSteps(grammarStepsHistory[cnfStep.current]);
       }
     }
@@ -145,16 +150,16 @@ export default function App() {
       }
       setTableCurrentStep(tableCurrentStep + 1);
     }
-    console.log(cnfStep.current);
   }
 
   const handleClickPrevious = () => {
     if (cnfRunning && cnfStep.current > 1) {
-      console.log("true");
+      console.log("CNF running");
       setCnfCurrentStep(cnfCurrentStep - 1);
       cnfStep.current -= 1;
       setGrammarSteps(grammarStepsHistory[cnfCurrentStep-2]);
     } else if (tableRunning) {
+      console.log("table running");
       if (tableCurrentStep == 1) {
         setTableRunning(false);
         setCnfRunning(true);
@@ -165,8 +170,6 @@ export default function App() {
     } else {
       setCanGoBack(false);
     }
-
-    console.log(cnfStep.current);
   }
 
   function displayGrammarList(grammar) {
