@@ -9,6 +9,7 @@ import './index.css';
 import GridRow from "./GridRow";
 import { cykParse, getExplanations } from "./cykParse";
 import { convertToCNF } from "./convertToCNF";
+import { cykParseBackpointers, buildParseTree } from "./buildParseTree";
 
 const theme = createTheme({
   palette: {
@@ -24,43 +25,43 @@ const theme = createTheme({
   },
 });
 
-const MyTreeComponent = () => {
+function TreeComponent ({ treeData }) {
 
-  const treeData = {
-    name: 'CEO',
-    children: [
-      {
-        name: 'Manager',
-        attributes: {
-          department: 'Production',
-        },
-        children: [
-          {
-            name: 'Foreman',
-            attributes: {
-              department: 'Fabrication',
-            },
-            children: [
-              {
-                name: 'Worker',
-              },
-            ],
-          },
-          {
-            name: 'Foreman',
-            attributes: {
-              department: 'Assembly',
-            },
-            children: [
-              {
-                name: 'Worker',
-              },
-            ],
-          },
-        ],
-      },
-    ],
-  };
+  // const treeData = {
+  //   name: 'CEO',
+  //   children: [
+  //     {
+  //       name: 'Manager',
+  //       attributes: {
+  //         department: 'Production',
+  //       },
+  //       children: [
+  //         {
+  //           name: 'Foreman',
+  //           attributes: {
+  //             department: 'Fabrication',
+  //           },
+  //           children: [
+  //             {
+  //               name: 'Worker',
+  //             },
+  //           ],
+  //         },
+  //         {
+  //           name: 'Foreman',
+  //           attributes: {
+  //             department: 'Assembly',
+  //           },
+  //           children: [
+  //             {
+  //               name: 'Worker',
+  //             },
+  //           ],
+  //         },
+  //       ],
+  //     },
+  //   ],
+  // };
 
   return <Tree data={treeData} orientation="vertical" zoomable={false} draggable={false}/>
 };
@@ -115,8 +116,10 @@ export default function App() {
 
   const handleClickParse =() => {
     setTableRunning(false);
+    setTreeRunning(false);
     setTableCurrentStep(0);
     setBetweenRunning(false);
+    setBetweenRunningTwo(false);
     setCnfFinished(false);
     setGrammarSteps([]);
     setGrammarStepsHistory([]);
@@ -125,6 +128,7 @@ export default function App() {
     cnfStep.current = 0;
     setCnfRunning(true);
     setCanGoForwards(true);
+    setCanGoBack(false);
     setString(inputString);
     cnfConversion.current = convertToCNF(convertGrammarInput());
     let nextStep = cnfConversion.current.next();
@@ -212,6 +216,10 @@ export default function App() {
       setBetweenRunning(false);
       setTableRunning(true);
       setTableCurrentStep(tableCurrentStep + 1);
+    } else if (betweenRunningTwo) {
+      setBetweenRunningTwo(false);
+      setTreeRunning(true);
+      setCanGoForwards(false);
     }
   }
 
@@ -237,6 +245,10 @@ export default function App() {
     } else if (betweenRunningTwo) {
       setBetweenRunningTwo(false);
       setTableRunning(true);
+    } else if (treeRunning) {
+      setTreeRunning(false);
+      setBetweenRunningTwo(true);
+      setCanGoForwards(true);
     } else {
       setCanGoBack(false);
     }
@@ -260,7 +272,7 @@ export default function App() {
   }
 
   function drawParseTable() {
-    if ((tableRunning && cykTable.length > 0 && tableCurrentStep > 0) || betweenRunningTwo) {
+    if ((tableRunning && cykTable.length > 0 && tableCurrentStep > 0) || betweenRunningTwo || treeRunning) {
       let rowList;
       let itemList = [];
       let squareText = "";
@@ -393,6 +405,15 @@ export default function App() {
     return <ul class="explanations-child">{explList}</ul>
   }
 
+  function displayParseTree() {
+    if (treeRunning) {
+      const backpointers = cykParseBackpointers(string, grammarSteps[grammarSteps.length-1]);
+      const tree = JSON.parse((buildParseTree(backpointers[string]['S'])).replace(',]',']'));
+      
+      return <TreeComponent treeData={tree}></TreeComponent>
+    }
+  }
+
   return (
     <ThemeProvider theme={theme}>
       <Grid container spacing={2}>
@@ -467,6 +488,9 @@ export default function App() {
                   <ul class="explanations-child">
                     {displayExplanations()}
                   </ul>
+                </div>
+                <div class="tree-child">
+                  {displayParseTree()}
                 </div>
               </div>
           </Paper>

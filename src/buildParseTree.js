@@ -8,8 +8,8 @@ class Node {
     }
 }
 
-function cykParse(stringToParse) {
-    var items = {'S': ['HD','HE','HF','HI'], 'A': ['IC','IB','IA','b'], 'B': ['BG','BH','AH','a'], 'C': ['AB'], 'D': ['IC'], 'E': ['IB'], 'F': ['IA'], 'G': ['AH'], 'H': ['a'], 'I': ['b']};
+export function cykParseBackpointers(stringToParse, items) {
+    //var items = {'S': ['HD','HE','HF','HI'], 'A': ['IC','IB','IA','b'], 'B': ['BG','BH','AH','a'], 'C': ['AB'], 'D': ['IC'], 'E': ['IB'], 'F': ['IA'], 'G': ['AH'], 'H': ['a'], 'I': ['b']};
     var n = stringToParse.length;
     var cykDict = {};
     var cykTable = [];
@@ -28,7 +28,7 @@ function cykParse(stringToParse) {
         }
     }
 
-    var substrings = getSubstrings(stringToParse);
+    var substrings = getSubstrings(stringToParse, n);
 
     for (var sub of substrings) {
         cykDict[sub] = [];
@@ -100,11 +100,11 @@ function cykParse(stringToParse) {
 export function buildParseTree(node) {
     if (node.right == null) {
         if (node.left == null) {
-            return node.value;
+            return '{"name": ' + '"' + node.value + '"}';
         } else {
-            return "[" + node.value + " " + buildParseTree(node.left) + "]";
+            return '{"name": ' + '"' + node.value + '"' + ', ' + '"children": [' + buildParseTree(node.left) + "]},";
         }
     }
 
-    return "[" + node.value + " " + buildParseTree(node.left) + " " + buildParseTree(node.right) + "]";
+    return '{"name":' + '"' + node.value + '"' + ', ' + '"children": [' + buildParseTree(node.left)  + buildParseTree(node.right) + ']}';
 }
