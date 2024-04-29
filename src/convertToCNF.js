@@ -48,11 +48,9 @@ function removeCharacter(str, index) {
     
     return(first + second);
 }
+// need to take into account if a lambda production is found and that's the only production from that non-terminal - would then need to remove any productions involving that non-terminal all together
 
 function removeLambdaProductions(grammarToConvert) {
-
-    // need to take into account if a lambda production is found and that's the only production from that non-terminal - would then need to remove any productions involving that non-terminal all together
-
     var newGrammar = {...grammarToConvert};
     
     var lambdaList = [];
@@ -204,10 +202,9 @@ function separateTerminals(grammarToConvert) {
     return newGrammar;
 }
 
+//var items = {'S': ['abAB'], 'A': ['bAB', ''], 'B': ['BAa', '']};
+
 export function* convertToCNF(grammar) {
-
-    //var items = {'S': ['abAB'], 'A': ['bAB', ''], 'B': ['BAa', '']};
-
     let grammar1 = removeLambdaProductions(grammar);
     yield grammar1;
 

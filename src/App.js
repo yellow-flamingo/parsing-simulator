@@ -29,25 +29,28 @@ export default function App() {
   let cnfConversion = useRef();
   let tableExplanations = useRef();
 
-  const [items,setItems] = useState([]);
   const [grammarInput, setGrammarInput] = useState([['S','abAB'], ['A','bAB'], ['A',''], ['B','BAa'], ['B','']]);
+  const [inputString, setInputString] = useState('abbbb');
   const [string,setString] = useState('abbbb');
   const [cykTable,setCykTable] = useState([]);
-  const [grammarSteps,setGrammarSteps] = useState([]);
   const [canGoBack,setCanGoBack] = useState(false);
   const [canGoForwards,setCanGoForwards] = useState(false);
 
   const [cnfRunning, setCnfRunning] = useState(false);
-  const [cnfCurrentStep, setCnfCurrentStep] = useState(0);
   let cnfStep = useRef(0);
 
   const [tableRunning, setTableRunning] = useState(false);
   const [tableCurrentStep, setTableCurrentStep] = useState(0);
 
-  const [grammarStepsHistory, setGrammarStepsHistory] = useState([]);
-  const [tableDataHistory, setTableDataHistory] = useState([]);
+  const [treeRunning, setTreeRunning] = useState(false);
 
   const [betweenRunning, setBetweenRunning] = useState(false);
+  const [betweenRunningTwo, setBetweenRunningTwo] = useState(false);
+
+  const [grammarSteps,setGrammarSteps] = useState([]);
+  const [grammarStepsHistory, setGrammarStepsHistory] = useState([]);
+
+  const [tableDataHistory, setTableDataHistory] = useState([]);
 
   const [cnfFinished, setCnfFinished] = useState(false);
 
@@ -60,7 +63,7 @@ export default function App() {
   ]
 
   const handleChangeString = (event) => {
-    setString(event.target.value);
+    setInputString(event.target.value);
   }
 
   const handleGrammarInput = (event, row, side) => {
@@ -70,15 +73,23 @@ export default function App() {
   }
 
   const handleClickParse =() => {
+    setTableRunning(false);
+    setTableCurrentStep(0);
+    setBetweenRunning(false);
+    setCnfFinished(false);
+    setGrammarSteps([]);
+    setGrammarStepsHistory([]);
+    setTableDataHistory([]);
+    tableExplanations.current = null;
+    cnfStep.current = 0;
     setCnfRunning(true);
     setCanGoForwards(true);
+    setString(inputString);
     cnfConversion.current = convertToCNF(convertGrammarInput());
     let nextStep = cnfConversion.current.next();
     setGrammarStepsHistory([[JSON.parse(JSON.stringify(nextStep.value))]]);
     setGrammarSteps([JSON.parse(JSON.stringify(nextStep.value))]);
-    setCnfCurrentStep(cnfCurrentStep + 1);
     cnfStep.current += 1;
-    console.log(cnfStep.current);
   }
 
   const handleClickPlus = () => {
@@ -88,78 +99,73 @@ export default function App() {
   function convertGrammarInput() {
     let grammar = {};
     for (let rule of grammarInput) {
-      if (Object.keys(grammar).includes(rule[0])) {
-        grammar[rule[0]].push(rule[1]);
-      } else {
-        grammar[rule[0]] = [rule[1]];
+      if (rule[0] != '') {
+        if (Object.keys(grammar).includes(rule[0])) {
+          grammar[rule[0]].push(rule[1]);
+        } else {
+          grammar[rule[0]] = [rule[1]];
+        }        
       }
     }
     return grammar;
   }
 
-
   function nextCnf() {
-    console.log("history length: ", grammarStepsHistory.length);
-    console.log("CNF current step: ", cnfStep.current);
     if (cnfStep.current >= grammarStepsHistory.length) {
-      console.log("current step greater than / equal to history length");
       let nextStep = cnfConversion.current.next();
 
       if (nextStep.done) {
-        console.log(nextStep.value);
         if (cnfFinished == false) {
-          console.log("CNF not finihsed")
           setGrammarStepsHistory([...grammarStepsHistory, [grammarSteps[grammarSteps.length-1]]]);
           setGrammarSteps([grammarSteps[grammarSteps.length-1]]);    
           setCnfFinished(true);
-          setCnfCurrentStep(cnfCurrentStep + 1);
-          cnfStep.current += 1;                          
+          setCnfRunning(false);
+          setBetweenRunning(true);                                   
         }
-        setCnfRunning(false);
-        setTableRunning(true);
       } else {
         setGrammarStepsHistory([...grammarStepsHistory, [...grammarSteps, JSON.parse(JSON.stringify(nextStep.value))]]);
-        setGrammarSteps([...grammarSteps, JSON.parse(JSON.stringify(nextStep.value))]);
-        setCnfCurrentStep(cnfCurrentStep + 1);
-        cnfStep.current += 1;      
+        setGrammarSteps([...grammarSteps, JSON.parse(JSON.stringify(nextStep.value))]);     
       }
 
     } else {
       if (grammarStepsHistory.length == 5 && cnfStep.current == 4) {
         setCnfRunning(false);
-        setTableRunning(true);        
+        setBetweenRunning(true);        
       }
       setGrammarSteps(grammarStepsHistory[cnfStep.current]);
-      setCnfCurrentStep(cnfCurrentStep + 1);
-      cnfStep.current += 1;
     }
-    
-    //setCnfCurrentStep(cnfCurrentStep + 1);
-    //cnfStep.current += 1;
+    cnfStep.current += 1;
+  }
+
+  function nextTable() {
+    if (tableCurrentStep == 0) {
+      setCykTable(cykParse(string, grammarSteps[grammarSteps.length-1]));
+    } else {
+      if (tableCurrentStep === 1 && !tableExplanations.current) {
+        tableExplanations.current = getExplanations(string, grammarSteps[grammarSteps.length-1], cykTable);
+      }
+      if (tableCurrentStep > tableDataHistory.length) {
+        let nextStep = tableExplanations.current.next()
+        if (nextStep.done) {
+          setTableRunning(false);
+          setBetweenRunningTwo(true);
+        }
+        setTableDataHistory([...tableDataHistory, JSON.parse(JSON.stringify(nextStep.value))]);
+      }
+    }
+    setTableCurrentStep(tableCurrentStep + 1);
   }
 
   const handleClickNext = () => {
+    console.log(tableCurrentStep);
     if (!canGoBack) {
       setCanGoBack(true);
     }
 
     if (cnfRunning) {
-      console.log("CNF running");
       nextCnf();
     } else if (tableRunning) {
-      console.log("table running");
-      if (tableCurrentStep == 0) {
-        setCykTable(cykParse(string, grammarSteps[grammarSteps.length-1]));
-      } else {
-        if (tableCurrentStep === 1 && !tableExplanations.current) {
-          tableExplanations.current = getExplanations(string, grammarSteps[grammarSteps.length-1], cykTable);
-        }
-        if (tableCurrentStep > tableDataHistory.length) {
-          let nextStep = tableExplanations.current.next().value;
-          setTableDataHistory([...tableDataHistory, JSON.parse(JSON.stringify(nextStep))]);
-        }
-      }
-      setTableCurrentStep(tableCurrentStep + 1);
+      nextTable();
     } else if (betweenRunning) {
       setCykTable(cykParse(string, grammarSteps[grammarSteps.length-1]));
       setBetweenRunning(false);
@@ -169,14 +175,12 @@ export default function App() {
   }
 
   const handleClickPrevious = () => {
+    console.log(tableCurrentStep);
     if (cnfRunning && cnfStep.current > 1) {
-      console.log("CNF running");
-      setCnfCurrentStep(cnfCurrentStep - 1);
+      console.log(cnfStep.current);
       cnfStep.current -= 1;
-      setGrammarSteps(grammarStepsHistory[cnfCurrentStep-2]);
+      setGrammarSteps(grammarStepsHistory[cnfStep.current-1]);
     } else if (tableRunning) {
-      console.log("table current step: ", tableCurrentStep);
-      console.log("table running");
       if (tableCurrentStep == 1) {
         setTableRunning(false);
         setBetweenRunning(true);
@@ -185,11 +189,13 @@ export default function App() {
         setTableCurrentStep(tableCurrentStep - 1);
       }
     } else if (betweenRunning) {
-      setCnfCurrentStep(cnfCurrentStep - 1);
       cnfStep.current -= 1;
-      setGrammarSteps(grammarStepsHistory[cnfCurrentStep-2]);
+      setGrammarSteps(grammarStepsHistory[cnfStep.current-1]);
       setBetweenRunning(false);
       setCnfRunning(true);      
+    } else if (betweenRunningTwo) {
+      setBetweenRunningTwo(false);
+      setTableRunning(true);
     } else {
       setCanGoBack(false);
     }
@@ -213,7 +219,7 @@ export default function App() {
   }
 
   function drawParseTable() {
-    if (tableRunning && cykTable.length > 0 && tableCurrentStep > 0) {
+    if ((tableRunning && cykTable.length > 0 && tableCurrentStep > 0) || betweenRunningTwo) {
       let rowList;
       let itemList = [];
       let squareText = "";
@@ -260,7 +266,7 @@ export default function App() {
             }            
           }
 
-          if (row == selectedRow && cell == selectedColumn) {
+          if (row == selectedRow && cell == selectedColumn && tableRunning) {
             rowList.push(<td><div class="square-table-selected" id={identifier}>{squareText}</div></td>)
           } else {
             rowList.push(<td><div class="square-table" id={identifier}>{squareText}</div></td>)
@@ -313,12 +319,20 @@ export default function App() {
             for (let elem of data.nonterminals[i][0]) {
               string1 = string1 + elem + ',';
             }
-            string1 = string1.slice(0,-1) + '}';
+            if (string1.length > 1) {
+              string1 = string1.slice(0,-1) + '}';
+            } else {
+              string1 += '}';
+            }
             
             for (let elem of data.nonterminals[i][1]) {
               string2 = string2 + elem + ',';
             }
-            string2 = string2.slice(0,-1) + '}';
+            if (string2.length > 1) {
+              string2 = string2.slice(0,-1) + '}';
+            } else {
+              string2 += '}';
+            }
   
             explList.push(<li>&nbsp; &nbsp; {string1} X {string2}</li>)
   
@@ -363,7 +377,7 @@ export default function App() {
                 margin="dense"
                 variant="outlined"
                 onChange={handleChangeString}
-                value={string}
+                value={inputString}
                 size="small"
                 style={{ marginBottom: 24, marginLeft: 8 }}>
               </TextField>
