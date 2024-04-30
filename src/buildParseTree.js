@@ -106,5 +106,5 @@ export function buildParseTree(node) {
         }
     }
 
-    return '{"name":' + '"' + node.value + '"' + ', ' + '"children": [' + buildParseTree(node.left)  + buildParseTree(node.right) + ']}';
+    return '{"name":' + '"' + node.value + '"' + ', ' + '"children": [' + buildParseTree(node.left)  + buildParseTree(node.right) + ']},';
 }

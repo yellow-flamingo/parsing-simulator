@@ -156,9 +156,21 @@ body {
 }
 
 .tree-child {
-  height: 500px;
+  height: 1000px;
   width: 1000px;
 }
+
+.result {
+  margin-top: 20px;
+  margin-left: 100px;
+  font-size: 24px;
+}
+
+.editor-rules {
+  color: gray;
+  font-size: 16px;
+}
+
 
 /* .tree-child {
   width: 400px;

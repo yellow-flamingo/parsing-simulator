@@ -19,51 +19,11 @@ const theme = createTheme({
     secondary: {
       main: '#97E63C'
     },
-    // action: {
-    //   disabledBackground: rgba(101,42,210,0.5)
-    // }
   },
 });
 
 function TreeComponent ({ treeData }) {
-
-  // const treeData = {
-  //   name: 'CEO',
-  //   children: [
-  //     {
-  //       name: 'Manager',
-  //       attributes: {
-  //         department: 'Production',
-  //       },
-  //       children: [
-  //         {
-  //           name: 'Foreman',
-  //           attributes: {
-  //             department: 'Fabrication',
-  //           },
-  //           children: [
-  //             {
-  //               name: 'Worker',
-  //             },
-  //           ],
-  //         },
-  //         {
-  //           name: 'Foreman',
-  //           attributes: {
-  //             department: 'Assembly',
-  //           },
-  //           children: [
-  //             {
-  //               name: 'Worker',
-  //             },
-  //           ],
-  //         },
-  //       ],
-  //     },
-  //   ],
-  // };
-
-  return <Tree data={treeData} orientation="vertical" zoomable={false} draggable={false}/>
+  return <Tree data={treeData} orientation="vertical" zoomable={false} draggable={true}/>
 };
 
 export default function App() {
@@ -84,6 +44,8 @@ export default function App() {
   const [tableRunning, setTableRunning] = useState(false);
   const [tableCurrentStep, setTableCurrentStep] = useState(0);
 
+  const [resultRunning, setResultRunning] = useState(false);
+
   const [treeRunning, setTreeRunning] = useState(false);
 
   const [betweenRunning, setBetweenRunning] = useState(false);
@@ -97,10 +59,11 @@ export default function App() {
   const [cnfFinished, setCnfFinished] = useState(false);
 
   const grammarExplanations = [
-    "Step 1 - remove lambda productions:",
-    "Step 2 - remove unit productions:",
-    "Step 3 - reduce to two symbols:",
-    "Step 4 - separate terminals from non-terminals:",
+    "Step 1 - remove S from RHS:",
+    "Step 2 - remove lambda productions:",
+    "Step 3 - remove unit productions:",
+    "Step 4 - reduce to two symbols:",
+    "Step 5 - separate terminals from non-terminals:",
     "Grammar in CNF:"
   ]
 
@@ -117,6 +80,7 @@ export default function App() {
   const handleClickParse =() => {
     setTableRunning(false);
     setTreeRunning(false);
+    setResultRunning(false);
     setTableCurrentStep(0);
     setBetweenRunning(false);
     setBetweenRunningTwo(false);
@@ -173,7 +137,7 @@ export default function App() {
       }
 
     } else {
-      if (grammarStepsHistory.length == 5 && cnfStep.current == 4) {
+      if (grammarStepsHistory.length == 6 && cnfStep.current == 5) {
         setCnfRunning(false);
         setBetweenRunning(true);        
       }
@@ -193,7 +157,7 @@ export default function App() {
         let nextStep = tableExplanations.current.next()
         if (nextStep.done) {
           setTableRunning(false);
-          setBetweenRunningTwo(true);
+          setResultRunning(true);
         }
         setTableDataHistory([...tableDataHistory, JSON.parse(JSON.stringify(nextStep.value))]);
       }
@@ -216,8 +180,8 @@ export default function App() {
       setBetweenRunning(false);
       setTableRunning(true);
       setTableCurrentStep(tableCurrentStep + 1);
-    } else if (betweenRunningTwo) {
-      setBetweenRunningTwo(false);
+    } else if (resultRunning) {
+      setResultRunning(false);
       setTreeRunning(true);
       setCanGoForwards(false);
     }
@@ -242,13 +206,13 @@ export default function App() {
       setGrammarSteps(grammarStepsHistory[cnfStep.current-1]);
       setBetweenRunning(false);
       setCnfRunning(true);      
-    } else if (betweenRunningTwo) {
-      setBetweenRunningTwo(false);
-      setTableRunning(true);
     } else if (treeRunning) {
       setTreeRunning(false);
-      setBetweenRunningTwo(true);
+      setResultRunning(true);
       setCanGoForwards(true);
+    } else if (resultRunning) {
+      setResultRunning(false);
+      setTableRunning(true);
     } else {
       setCanGoBack(false);
     }
@@ -272,7 +236,7 @@ export default function App() {
   }
 
   function drawParseTable() {
-    if ((tableRunning && cykTable.length > 0 && tableCurrentStep > 0) || betweenRunningTwo || treeRunning) {
+    if ((tableRunning && cykTable.length > 0 && tableCurrentStep > 0) || resultRunning || betweenRunningTwo || treeRunning) {
       let rowList;
       let itemList = [];
       let squareText = "";
@@ -405,12 +369,41 @@ export default function App() {
     return <ul class="explanations-child">{explList}</ul>
   }
 
+  function isAccepted() {
+    if (Object.keys(grammarSteps[0]).includes('S0')) {
+      if (cykTable[0][0].includes('S0')) {
+        return true
+      }
+    } else {
+      if (cykTable[0][0].includes('S')) {
+        return true
+      }
+    }
+    return false
+  }
+
+  function displayResult() {
+    if (resultRunning || treeRunning) {
+      if (isAccepted()) {
+        return "'" + string + "' is accepted"
+      } else {
+        return "'" + string + "' is not accepted"
+      }
+    }
+  }
+
   function displayParseTree() {
-    if (treeRunning) {
-      const backpointers = cykParseBackpointers(string, grammarSteps[grammarSteps.length-1]);
-      const tree = JSON.parse((buildParseTree(backpointers[string]['S'])).replace(',]',']'));
-      
-      return <TreeComponent treeData={tree}></TreeComponent>
+    if (treeRunning && isAccepted()) {
+      const backpointers = cykParseBackpointers(string, grammarSteps[[0]]);
+      var tree = (buildParseTree(backpointers[string][Object.keys(grammarSteps[0]).includes('S0') ? 'S0' : 'S'])).replaceAll(',]',']');
+
+      if (tree[tree.length-1] == ',') {
+        tree = tree.slice(0,-1);
+      }
+
+      const treeData = JSON.parse(tree);
+
+      return <TreeComponent treeData={treeData}></TreeComponent>
     }
   }
 
@@ -419,7 +412,7 @@ export default function App() {
       <Grid container spacing={2}>
         <Grid item xs={2}>
           <Paper elevation={6} height={1200}
-            style={{ minHeight: "70vh", maxHeight: "70vh", padding: 8, overflow: "auto" }}>
+            style={{ minHeight: "60vh", maxHeight: "60vh", padding: 8, overflow: "auto" }}>
               <Typography variant="h6" style={{ marginLeft: 8, marginTop: 8 }}>
                 Step 1: Enter your grammar
               </Typography>
@@ -444,18 +437,21 @@ export default function App() {
                 style={{ marginBottom: 24, marginLeft: 8 }}>
               </TextField>
               <Typography variant="h6" style={{ padding: 8 }}>
-                Step 3: Select Algorithm
+                Step 3: Start Visualisation
               </Typography>
               <Button onClick={handleClickParse} variant="contained" color="primary" startIcon={<PlayArrow />} style={{ justifyContent: "flex-start", width: 214, marginBottom: 8, marginLeft: 8 }}>
                 CYK Parse
-              </Button>              
-              <Button variant="contained" color="primary" startIcon={<PlayArrow />} style={{ justifyContent: "flex-start", width: 214, marginBottom: 8, marginLeft: 8 }}>
-                Convert To CNF
-              </Button>
-              <Button variant="contained" color="primary" startIcon={<PlayArrow />} style={{ justifyContent: "flex-start", width: 214, marginBottom: 8, marginLeft: 8 }}>
-                Convert To GNF
-              </Button>                                
+              </Button>                             
           </Paper>
+          <p class="editor-rules">
+            Start symbol must be 'S'. <br/><br/>
+            Each production rule must be written on a separate line.<br/>
+            e.g. S &#8594; B | C must be written as two separate rules:<br/>
+            S &#8594; B<br/>
+            S &#8594; C<br/><br/>
+            Please Note: this tool currently only supports the parsing of strings of single characters. <br/>
+            If you wish to enter a more complex grammar / string e.g. a full english sentence, the visualisation will not be accurate.
+          </p>
         </Grid>
         <Grid item xs={10}>
           <Paper elevation={6} height={1200}
@@ -470,7 +466,7 @@ export default function App() {
                 {grammarSteps.map((step,index) =>
                   <div class="grammar-list-main">
                     <div class="grammar-list-title">
-                      {grammarExplanations[cnfStep.current < 5 ? index : 4]}
+                      {grammarExplanations[cnfStep.current < 6 ? index : 5]}
                     </div>
                     <div class="grammar-list-child">
                       {displayGrammarList(step)}
@@ -483,6 +479,9 @@ export default function App() {
                       {drawParseTable()}
                     </tbody>
                   </table>
+                  <div class="result">
+                  {displayResult()}
+                  </div>
                 </div>
                 <div class="explanations">
                   <ul class="explanations-child">

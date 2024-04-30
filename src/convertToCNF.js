@@ -50,6 +50,21 @@ function removeCharacter(str, index) {
 }
 // need to take into account if a lambda production is found and that's the only production from that non-terminal - would then need to remove any productions involving that non-terminal all together
 
+function removeStartSymbol(grammarToConvert) {
+    var newGrammar = {...grammarToConvert};
+
+    for (let elem of newGrammar['S']) {
+        console.log(elem);
+        if (elem.includes('S')) {
+            newGrammar["S0"] = ["S"];
+        }
+    }
+
+    console.log(newGrammar);
+
+    return newGrammar;
+}
+
 function removeLambdaProductions(grammarToConvert) {
     var newGrammar = {...grammarToConvert};
     
@@ -202,18 +217,19 @@ function separateTerminals(grammarToConvert) {
     return newGrammar;
 }
 
-//var items = {'S': ['abAB'], 'A': ['bAB', ''], 'B': ['BAa', '']};
-
 export function* convertToCNF(grammar) {
-    let grammar1 = removeLambdaProductions(grammar);
+    let grammar1 = removeStartSymbol(grammar);
     yield grammar1;
 
-    let grammar2 = removeUnitProductions(grammar1);
+    let grammar2 = removeLambdaProductions(grammar1);
     yield grammar2;
 
-    let grammar3 = ensureTwoSymbols(grammar2);
+    let grammar3 = removeUnitProductions(grammar2);
     yield grammar3;
 
-    let grammar4 = separateTerminals(grammar3);
+    let grammar4 = ensureTwoSymbols(grammar3);
     yield grammar4;
+
+    let grammar5 = separateTerminals(grammar4);
+    yield grammar5;
 }
