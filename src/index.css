@@ -13,20 +13,17 @@ body {
   white-space: nowrap;
 }
 
-.square-table, .square-string, .square-index, .square-string-below-selected, .square-table-selected, .square-table-below-selected, .square-table-above-selected, .square-table-left-selected, .square-table-right-selected {
+.square-table, .square-string, .square-index, .square-string-below-selected, .square-table-selected {
   float: left;
   font-size: 24px;
   line-height: 34px;
   height: 80px;
-  /* padding: 0;
-  margin-top: -12px;
-  margin-right: -10px; */
   word-wrap: break-word; 
   white-space: normal;
   background-color: white;
 }
 
-.square-table, .square-table-selected, .square-table-above-selected, .square-table-below-selected, .square-table-left-selected, .square-table-right-selected {
+.square-table, .square-table-selected {
   width: 80px;
   text-align: center;
 }
@@ -45,34 +42,6 @@ body {
 .square-table-selected {
   border: 5px solid #18db42;
   z-index: -1;
-}
-
-.square-table-below-selected {
-  border-top: 5px solid #42f543;
-  border-bottom: 5px solid black;
-  border-left: 5px solid black;
-  border-right: 5px solid black;
-}
-
-.square-table-above-selected {
-  border-top: 5px solid black;
-  border-bottom: 5px solid #42f543;
-  border-left: 5px solid black;
-  border-right: 5px solid black;
-}
-
-.square-table-left-selected {
-  border-top: 5px solid black;
-  border-bottom: 5px solid black;
-  border-left: 5px solid black;
-  border-right: 5px solid #42f543;
-}
-
-.square-table-right-selected {
-  border-top: 5px solid black;
-  border-bottom: 5px solid black;
-  border-left: 5px solid #42f543;
-  border-right: 5px solid black;
 }
 
 .square-string, .square-string-selected {
@@ -170,9 +139,3 @@ body {
   color: gray;
   font-size: 16px;
 }
-
-
-/* .tree-child {
-  width: 400px;
-  height: 400px;
-} */

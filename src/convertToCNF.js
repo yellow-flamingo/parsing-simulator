@@ -48,8 +48,18 @@ function removeCharacter(str, index) {
     
     return(first + second);
 }
-// need to take into account if a lambda production is found and that's the only production from that non-terminal - would then need to remove any productions involving that non-terminal all together
-// could create a variable and set it to true if it is the only production from that non-terminal and add behaviour accordingly
+
+function removeSingleSymbol(productions, lambda) {
+    let arrayToAdd = [];
+
+    for (let item of productions) {
+        if (!(item == lambda)) {
+            arrayToAdd.push(item);
+        }
+    }
+
+    return arrayToAdd
+}
 
 function removeStartSymbol(grammarToConvert) {
     var newGrammar = {...grammarToConvert};
@@ -66,21 +76,8 @@ function removeStartSymbol(grammarToConvert) {
     return newGrammar;
 }
 
-function removeSingleSymbol(productions, lambda) {
-    let arrayToAdd = [];
-
-    for (let item of productions) {
-        if (!(item == lambda)) {
-            arrayToAdd.push(item);
-        }
-    }
-
-    return arrayToAdd
-}
-
 function removeLambdaProductions(grammarToConvert) {
     var newGrammar = {...grammarToConvert};
-    
     var lambdaList = [];
     
     for (let key in newGrammar) {
@@ -114,7 +111,6 @@ function removeLambdaProductions(grammarToConvert) {
                                 }             
                             }
                         }
-                        
                         if (lambda.onlySymbol == true) {
                             newGrammar[key] = removeSingleSymbol(newGrammar[key], item);
                         }
@@ -133,40 +129,9 @@ function removeLambdaProductions(grammarToConvert) {
     return newGrammar;
 }
 
-// function removeLambdaProductions(grammarToConvert) {
-//     var newGrammar = {...grammarToConvert};
-    
-//     var lambdaList = [];
-    
-//     for (let key in newGrammar) {
-//         if (newGrammar[key].includes('')) {
-//             lambdaList.push(key);
-//             newGrammar[key].splice(newGrammar[key].indexOf(''),1);
-//         }
-//     }
-    
-//     let stringToAdd;
-//     for (let lambda of lambdaList) {
-//         for (let key in newGrammar) {
-//             for (let item of newGrammar[key]) {
-//                 if (item == lambda) {
-//                     lambdaList.push(key);
-//                 } else {
-//                     for (let i=0; i<item.length; i++) {
-//                         if (item[i] == lambda) {
-//                             stringToAdd = removeCharacter(item,i);
-//                             if (!(newGrammar[key].includes(stringToAdd))) {
-//                                 newGrammar[key].push(stringToAdd);
-//                             }
-//                         }
-//                     }                
-//                 }
-//             }
-//         }
-//     }
 
-//     return newGrammar;
-// }
+
+
 
 function removeUnitProductions(grammarToConvert) {
     var newGrammar = {...grammarToConvert};
@@ -230,7 +195,6 @@ function ensureTwoSymbols(grammarToConvert) {
 
 function separateTerminals(grammarToConvert) {
     var newGrammar = {...grammarToConvert};
-
     var nonTerminals = Object.keys(newGrammar);
     var newNonTerminal;
 
@@ -281,7 +245,6 @@ function separateTerminals(grammarToConvert) {
             }
         }
     }
-
     return newGrammar;
 }
 
@@ -301,3 +264,5 @@ export function* convertToCNF(grammar) {
     let grammar5 = separateTerminals(grammar4);
     yield grammar5;
 }
+
+

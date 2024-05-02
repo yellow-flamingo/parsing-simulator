@@ -22,10 +22,6 @@ const theme = createTheme({
   },
 });
 
-function TreeComponent ({ treeData }) {
-  return <Tree data={treeData} orientation="vertical" zoomable={false} draggable={true}/>
-};
-
 export default function App() {
 
   let cnfConversion = useRef();
@@ -166,7 +162,6 @@ export default function App() {
   }
 
   const handleClickNext = () => {
-    console.log(tableCurrentStep);
     if (!canGoBack) {
       setCanGoBack(true);
     }
@@ -188,9 +183,7 @@ export default function App() {
   }
 
   const handleClickPrevious = () => {
-    console.log(tableCurrentStep);
     if (cnfRunning && cnfStep.current > 1) {
-      console.log(cnfStep.current);
       cnfStep.current -= 1;
       setGrammarSteps(grammarStepsHistory[cnfStep.current-1]);
     } else if (tableRunning) {
@@ -224,8 +217,13 @@ export default function App() {
     for (let key in grammar) {
       let rightSide = "";
       for (let item of grammar[key]) {
-        rightSide += item + ' | '
+        if (item == '') {
+          rightSide += 'lambda' + ' | ';
+        } else {
+          rightSide += item + ' | ';
+        }
       }
+
       rightSide = rightSide.slice(0,-3);
   
       listItem = <li>{key} &#8594; {rightSide}</li>
@@ -403,7 +401,7 @@ export default function App() {
 
       const treeData = JSON.parse(tree);
 
-      return <TreeComponent treeData={treeData}></TreeComponent>
+      return <Tree data={treeData} orientation="vertical" zoomable={false} draggable={true}/>
     }
   }
 

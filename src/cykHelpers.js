@@ -1,4 +1,5 @@
-export function getSubstrings(stringToParse, n) {
+export function getSubstrings(stringToParse) {
+    let n = stringToParse.length;
     let substrings = [];
     for (let i=0; i<n; i++) {
         for (let j=0; j<n-i; j++) {
@@ -33,3 +34,5 @@ export function getCombinations(string) {
     }
     return combinations;
 }
+
+

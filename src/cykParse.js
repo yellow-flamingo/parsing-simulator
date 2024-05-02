@@ -1,7 +1,6 @@
 import { getSubstrings, cartesianProduct, getCombinations } from "./cykHelpers";
 
 export function cykParse(stringToParse, items) {
-    //var items = {'S': ['CE','CG','CH','CD'], 'A': ['DF','DA','DB','b'], 'B': ['BI','BC','AC','a','DF','DA','DB','b'], 'C': ['a'], 'D': ['b'], 'E': ['DF'], 'F': ['AB'], 'G': ['DA'], 'H': ['DB'], 'I': ['AC']};
     var n = stringToParse.length;
     var cykDict = {};
     var cykTable = [];
@@ -18,7 +17,7 @@ export function cykParse(stringToParse, items) {
         }
     }
 
-    var substrings = getSubstrings(stringToParse, n);
+    var substrings = getSubstrings(stringToParse);
 
     for (var sub of substrings) {
         cykDict[sub] = [];
@@ -86,7 +85,7 @@ export function* getExplanations(stringToParse, items, table) {
     var currentCell = 0;
     var currentLength = 1
     
-    var substrings = getSubstrings(stringToParse, n);
+    var substrings = getSubstrings(stringToParse);
     
     for (let sub of substrings) {
         if (sub.length > currentLength) {

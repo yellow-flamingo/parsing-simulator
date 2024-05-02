@@ -9,24 +9,13 @@ class Node {
 }
 
 export function cykParseBackpointers(stringToParse, items) {
-    //var items = {'S': ['HD','HE','HF','HI'], 'A': ['IC','IB','IA','b'], 'B': ['BG','BH','AH','a'], 'C': ['AB'], 'D': ['IC'], 'E': ['IB'], 'F': ['IA'], 'G': ['AH'], 'H': ['a'], 'I': ['b']};
     var n = stringToParse.length;
     var cykDict = {};
-    var cykTable = [];
     var backpointers = {};
-    var currentRow = n-1;
-    var currentCell = 0;
     var currentLength = 1;
     var currentList = [];
     var addToDict = true;
     var addToBackpointers = true;
-
-    for (let i=0; i<n; i++) {
-        cykTable.push([]);
-        for (let j=0; j<n; j++) {
-            cykTable[i].push([]);
-        }
-    }
 
     var substrings = getSubstrings(stringToParse, n);
 
@@ -46,8 +35,6 @@ export function cykParseBackpointers(stringToParse, items) {
         
         if (substrings[i].length > currentLength) {
             currentLength = substrings[i].length;
-            currentRow -= 1;
-            currentCell = 0;
         }
         
         if (currentLength === 1) {
@@ -66,10 +53,6 @@ export function cykParseBackpointers(stringToParse, items) {
                         if (items[key].includes(val)) {
                             currentList.push(key);
                             if (addToBackpointers) {
-                                // need to update this:
-                                // currently if the same non-terminal can be found from 2 different pairs
-                                // aka if there are multiple parse trees for the given string
-                                // they will override each other when adding to backpointers
                                 let left_sub = combo[0];
                                 let right_sub = combo[1];
                                 let left_nonterminal = val[0];
@@ -84,13 +67,11 @@ export function cykParseBackpointers(stringToParse, items) {
         
         let currentListSet = new Set(currentList);
         for (let letter of currentListSet) {
-            cykTable[currentRow][currentCell].push(letter);
             if (addToDict) {
                 cykDict[substrings[i]].push(letter);
             }
         }
 
-        currentCell += 1;
         currentList = [];
     }
 
