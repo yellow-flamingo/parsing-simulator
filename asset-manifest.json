@@ -1,13 +1,13 @@
 {
   "files": {
     "main.css": "/parsing-simulator/static/css/main.b82b0b73.css",
-    "main.js": "/parsing-simulator/static/js/main.95af8525.js",
+    "main.js": "/parsing-simulator/static/js/main.740e61b4.js",
     "index.html": "/parsing-simulator/index.html",
     "main.b82b0b73.css.map": "/parsing-simulator/static/css/main.b82b0b73.css.map",
-    "main.95af8525.js.map": "/parsing-simulator/static/js/main.95af8525.js.map"
+    "main.740e61b4.js.map": "/parsing-simulator/static/js/main.740e61b4.js.map"
   },
   "entrypoints": [
     "static/css/main.b82b0b73.css",
-    "static/js/main.95af8525.js"
+    "static/js/main.740e61b4.js"
   ]
 }
