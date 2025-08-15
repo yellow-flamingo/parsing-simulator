@@ -414,7 +414,7 @@ export default function App() {
               <Typography variant="h6" style={{ marginLeft: 8, marginTop: 8 }}>
                 Step 1: Enter your grammar
               </Typography>
-              <Grid style={{ marginLeft: 8 }}>
+              <Grid style={{ marginLeft: 8, marginRight: 8 }}>
                 {grammarInput.map((row,index) => 
                   <GridRow rowId={index} lhs={row[0]} rhs={row[1]} handler={handleGrammarInput}></GridRow>
                 )}
@@ -437,7 +437,7 @@ export default function App() {
               <Typography variant="h6" style={{ padding: 8 }}>
                 Step 3: Start Visualisation
               </Typography>
-              <Button onClick={handleClickParse} variant="contained" color="primary" startIcon={<PlayArrow />} style={{ justifyContent: "flex-start", width: 214, marginBottom: 8, marginLeft: 8 }}>
+              <Button onClick={handleClickParse} variant="contained" color="primary" startIcon={<PlayArrow />} style={{ justifyContent: "flex-start", width: 150, marginBottom: 8, marginLeft: 8 }}>
                 CYK Parse
               </Button>                             
           </Paper>
