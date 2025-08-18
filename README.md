@@ -5,6 +5,8 @@ Enter a formal grammar and a string and view a step-by-step visualisation of the
 2. Builds the parse table
 3. Builds the parse tree
 
+The project can be found here: https://yellow-flamingo.github.io/parsing-simulator/
+
 <img width="1816" height="940" alt="image" src="https://github.com/user-attachments/assets/b5a012df-9bf0-4e20-ac52-79226d927235" />
 
 
