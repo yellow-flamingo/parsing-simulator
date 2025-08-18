@@ -6,10 +6,10 @@ import AddCircleIcon from '@mui/icons-material/AddCircle';
 import { useState, useRef } from 'react';
 import Tree from 'react-d3-tree';
 import './index.css';
-import GridRow from "./GridRow";
-import { cykParse, getExplanations } from "./cykParse";
-import { convertToCNF } from "./convertToCNF";
-import { cykParseBackpointers, buildParseTree } from "./buildParseTree";
+import GridRow from "./components/GridRow";
+import { cykParse, getExplanations } from "./algorithms/cykParse";
+import { convertToCNF } from "./algorithms/convertToCNF";
+import { cykParseBackpointers, buildParseTree } from "./algorithms/buildParseTree";
 
 const theme = createTheme({
   palette: {
@@ -409,8 +409,8 @@ export default function App() {
     <ThemeProvider theme={theme}>
       <Grid container spacing={2}>
         <Grid item xs={2}>
-          <Paper  height={1200}
-            style={{ minHeight: "60vh", maxHeight: "60vh", padding: 8, overflow: "auto", border: '4px solid #652AD2' }}>
+          <Paper elevation={6} height={1200}
+            style={{ minHeight: "60vh", maxHeight: "60vh", padding: 8, overflow: "auto", border: "2px solid #652AD2" }}>
               <Typography variant="h6" style={{ marginLeft: 8, marginTop: 8 }}>
                 Step 1: Enter your grammar
               </Typography>
@@ -452,8 +452,8 @@ export default function App() {
           </p>
         </Grid>
         <Grid item xs={10}>
-          <Paper height={1200}
-            style={{ minHeight: "94.3vh", maxHeight: "94.3vh", padding: 8, overflow: "auto", border: '4px solid #652AD2' }}>
+          <Paper elevation = {6} height={1200}
+            style={{ minHeight: "94.3vh", maxHeight: "94.3vh", padding: 8, overflow: "auto", border: "2px solid #652AD2" }}>
               <Box display="inline">
                 <Box textAlign="center">
                   <Button onClick = {handleClickPrevious} disabled={!canGoBack} variant="contained" color="primary" style={{ minWidth: '30px', maxWidth: '30px', maxHeight: '30px', marginTop: 8, marginRight: 2 }} startIcon={<ArrowLeft style={{marginLeft: '10px'}} />}></Button>
